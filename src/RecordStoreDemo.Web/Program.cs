@@ -1,8 +1,24 @@
+using Microsoft.OpenApi.Models;
+using MudBlazor.Services;
+using RecordStoreDemo;
 using RecordStoreDemo.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("RecordStoreDemo")
+    ?? throw new InvalidOperationException("Connection string not found.");
+
+builder.Services.AddAzureInfrastructure();
+builder.Services.AddControllers();
+builder.Services.AddExternal();
+builder.Services.AddMudServices();
+builder.Services.AddPersistence(connectionString);
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Record Store Demo API", Version = "v1" });
+    c.EnableAnnotations();
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 

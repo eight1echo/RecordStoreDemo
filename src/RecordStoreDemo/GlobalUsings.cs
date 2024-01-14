@@ -13,3 +13,10 @@ global using RecordStoreDemo.Common.Exceptions;
 global using RecordStoreDemo.Common.Models;
 global using RecordStoreDemo.Common.Validation;
 global using RecordStoreDemo.Common.ValueObjects;
+
+global using RecordStoreDemo.Features.Purchasing.Catalogs;
+global using RecordStoreDemo.Features.Purchasing.PurchaseOrders;
+global using RecordStoreDemo.Features.Purchasing.Vendors;
+
+global using RecordStoreDemo.Persistence;
+global using RecordStoreDemo.Persistence.Repositories;
