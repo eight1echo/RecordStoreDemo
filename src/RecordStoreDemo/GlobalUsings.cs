@@ -1,6 +1,9 @@
 ﻿global using Ardalis.GuardClauses;
 global using Ardalis.ApiEndpoints;
+global using Swashbuckle.AspNetCore.Annotations;
 
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 
 global using System.ComponentModel.DataAnnotations;
