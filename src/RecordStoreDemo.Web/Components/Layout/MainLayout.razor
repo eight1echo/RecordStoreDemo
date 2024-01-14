@@ -1,9 +1,75 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager _navigation
 
-@Body
+<PageTitle>Record Store Demo</PageTitle>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+<MudThemeProvider IsDarkMode="true" />
+
+<MudDialogProvider FullWidth="true"
+                   DisableBackdropClick="true"
+                   NoHeader="true"
+                   Position="DialogPosition.TopCenter" />
+
+<MudSnackbarProvider />
+
+<MudLayout>
+
+    <MudAppBar>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" Title="Toggle Menu" />
+        <MudText Typo="Typo.h6">Record Store Demo</MudText>
+        <MudSpacer />
+
+        <MudDivider Vertical="true" />
+        <EditForm Model="@FindQuery" OnValidSubmit="FindProducts">
+            <MudContainer Class="d-flex gap-5 justify-center">
+                <MudTextField @bind-Value="@FindQuery.Artist" For="@(() => FindQuery.Artist)" Label="Artist" Margin="Margin.Dense" Variant="Variant.Text" />
+                <MudTextField @bind-Value="@FindQuery.Title" For="@(() => FindQuery.Title)" Label="Title" Margin="Margin.Dense" Variant="Variant.Text" />
+                <MudTextField @bind-Value="@FindQuery.UPC" For="@(() => FindQuery.UPC)" Label="UPC" Margin="Margin.Dense" Variant="Variant.Text" />
+                <MudIconButton Color="Color.Warning" Icon="@Icons.Material.Filled.ManageSearch" ButtonType="ButtonType.Submit" Title="Query" />
+                <MudIconButton OnClick="@ResetSearch" Color="Color.Error" Icon="@Icons.Material.Filled.Replay" Title="Reset" />
+            </MudContainer>
+        </EditForm>
+        <MudDivider Vertical="true" />
+
+        <MudSpacer />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="@_drawerOpen">
+        <NavMenu />
+    </MudDrawer>
+
+    
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+
+</MudLayout>
+
+@code {
+    private ProductQueryRequest FindQuery { get; set; } = new ProductQueryRequest() { Artist = "periphery" };
+
+    private void FindProducts()
+    {
+        if (FindQuery.IsValid())
+        {
+            _navigation.NavigateTo($"query?artist={FindQuery.Artist}&title={FindQuery.Title}&upc={FindQuery.UPC}");
+        }        
+    }
+
+    private void ResetSearch()
+    {
+        FindQuery.Artist = string.Empty;
+        FindQuery.Title = string.Empty;
+        FindQuery.UPC = string.Empty;
+
+        _navigation.NavigateTo($"");
+    }
+
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

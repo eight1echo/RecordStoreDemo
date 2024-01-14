@@ -1,0 +1,5 @@
+﻿@code {
+    public bool Loading { get; private set; }
+    public bool BeginLoading() => Loading = true;
+    public bool FinishLoading() => Loading = false;
+}
