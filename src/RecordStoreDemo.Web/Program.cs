@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("RecordStoreDemo")
     ?? throw new InvalidOperationException("Connection string not found.");
 
+builder.Services.AddApplicationFeatures();
 builder.Services.AddAzureInfrastructure();
 builder.Services.AddControllers();
 builder.Services.AddExternal();
@@ -24,8 +25,12 @@ builder.Services.AddRazorComponents()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -33,6 +38,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
 app.UseStaticFiles();
 app.UseAntiforgery();

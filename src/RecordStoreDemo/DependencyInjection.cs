@@ -15,6 +15,15 @@ namespace RecordStoreDemo;
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddApplicationFeatures(this IServiceCollection services)
+    {
+        services.AddTransient<IWebstoreCollectionService, WebstoreCollectionService>();
+        services.AddTransient<IWebstoreImageService, WebstoreImageService>();
+        services.AddTransient<IWebstoreMetaFieldService, WebstoreMetaFieldService>();
+        services.AddTransient<IWebstoreProductService, WebstoreProductService>();
+
+        return services;
+    }
     public static IServiceCollection AddAzureInfrastructure(this IServiceCollection services)
     {
         services.AddAzureClients(builder =>
