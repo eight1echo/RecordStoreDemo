@@ -6,4 +6,26 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Ardalis.ApiEndpoints" Version="4.1.0" />
+		<PackageReference Include="Ardalis.GuardClauses" Version="4.3.0" />
+
+		<PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.3.0" />
+		<PackageReference Include="Azure.Identity" Version="1.10.4" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
+
+		<PackageReference Include="CsvHelper" Version="30.0.1" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.57" />
+		<PackageReference Include="Inflatable.Lastfm" Version="1.2.0" />
+		<PackageReference Include="MetaBrainz.MusicBrainz" Version="6.0.0" />
+		<PackageReference Include="MudBlazor" Version="6.12.0" />
+		<PackageReference Include="ParkSquare.Discogs" Version="1.0.35" />
+		<PackageReference Include="ShopifySharp" Version="6.11.0" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.1" />
+		
+	</ItemGroup>
+
 </Project>
