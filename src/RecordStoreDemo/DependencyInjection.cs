@@ -63,6 +63,7 @@ public static class DependencyInjection
 
         services.AddTransient<IInventoryProductRepository, InventoryProductRepository>();
         services.AddTransient<IPurchaseOrderRepository, PurchaseOrderRepository>();
+        services.AddTransient<IReceiveRepository, ReceiveRepository>();
         services.AddTransient<IVendorRepository, VendorRepository>();
 
         return services;

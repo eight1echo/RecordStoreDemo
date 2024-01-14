@@ -13,6 +13,8 @@ public class RecordStoreDbContext(DbContextOptions<RecordStoreDbContext> options
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
     public DbSet<PurchaseOrderItem> PurchaseOrderItems => Set<PurchaseOrderItem>();
     public DbSet<Vendor> Vendors => Set<Vendor>();
+    // Receiving
+    public DbSet<Receive> Receives => Set<Receive>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
