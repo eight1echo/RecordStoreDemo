@@ -61,6 +61,7 @@ public static class DependencyInjection
         services.AddDbContext<RecordStoreDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddTransient<IInventoryProductRepository, InventoryProductRepository>();
         services.AddTransient<IPurchaseOrderRepository, PurchaseOrderRepository>();
         services.AddTransient<IVendorRepository, VendorRepository>();
 
