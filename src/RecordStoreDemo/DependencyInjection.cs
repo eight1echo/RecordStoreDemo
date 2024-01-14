@@ -1,7 +1,6 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using ParkSquare.Discogs;
-using System.Net;
 
 using RecordStoreDemo.External.Azure;
 using RecordStoreDemo.External.DataSources.Discogs;
@@ -17,6 +16,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationFeatures(this IServiceCollection services)
     {
+        services.AddHttpClient<ICatalogService, CatalogService>();
+        services.AddHttpClient<IInventoryProductService, InventoryProductService>();
+        services.AddHttpClient<IPurchaseOrderService, PurchaseOrderService>();
+        services.AddHttpClient<IReceiveService, ReceiveService>();
+        services.AddHttpClient<IVendorService, VendorService>();
+
         services.AddTransient<IWebstoreCollectionService, WebstoreCollectionService>();
         services.AddTransient<IWebstoreImageService, WebstoreImageService>();
         services.AddTransient<IWebstoreMetaFieldService, WebstoreMetaFieldService>();

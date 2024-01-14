@@ -7,6 +7,8 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 
 global using System.ComponentModel.DataAnnotations;
+global using System.Net;
+global using System.Net.Http.Json;
 global using System.Text.RegularExpressions;
 
 global using RecordStoreDemo.Common;
