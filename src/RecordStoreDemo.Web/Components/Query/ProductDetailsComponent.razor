@@ -1,0 +1,159 @@
+﻿@using RecordStoreDemo.Features.Inventory.Products.Commands.CreateInventoryProduct
+@inherits LoadingComponent
+@inject ICatalogService _catalogs
+@inject IInventoryProductService _inventory
+@inject IWebstoreProductService _webstoreProducts
+
+<MudContainer Fixed="true">
+    <MudGrid>
+        <MudItem xs="12" Class="d-flex justify-end px-5 mt-3">
+            <MudIconButton OnClick="async() => await OnClose.InvokeAsync()" Icon="@Icons.Material.Outlined.Cancel" Size="Size.Large" Title="Close" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+
+    <MudTabs @ref="Tabs" Class="mt-5" Elevation="5" Rounded="true" ApplyEffectsToContainer="true" Position="Position.Top" >
+        <MudTabPanel @ref="CatalogPanel" Text="Catalog" >
+            @if (ProductDetails.CatalogProduct is not null)
+            {
+                <CatalogProductDetailsComponent CatalogProduct="@ProductDetails.CatalogProduct" />
+            }              
+        </MudTabPanel>
+
+        <MudTabPanel @ref="InventoryPanel" Text="Inventory" OnClick="GetInventoryProduct">
+            @if (ProductDetails.InventoryProduct is not null)
+            {
+                <InventoryProductDetailsComponent Product="@ProductDetails.InventoryProduct" />                
+            }
+            else
+            {
+                <MudContainer Class="mt-5 pa-5" MaxWidth="MaxWidth.Medium">
+                    <MudGrid>
+                        <MudItem xs="12" Class="d-flex justify-center">
+                            <MudButton OnClick="@AddToInventory" Color="Color.Primary" Variant="Variant.Outlined">Add to Inventory</MudButton>
+                        </MudItem>
+                    </MudGrid>                    
+                </MudContainer>
+            }
+        </MudTabPanel>
+
+        <MudTabPanel @ref="WebstorePanel" Text="Webstore" OnClick="GetWebstoreProduct">
+            @if (ProductDetails.WebstoreProduct is not null)
+            {
+                <WebstoreProductDetailsComponent Product="@ProductDetails.WebstoreProduct" />
+            }
+            else
+            {
+                <MudContainer Class="mt-5 pa-5" MaxWidth="MaxWidth.Medium">
+                    <MudGrid>
+                        <MudItem xs="12" Class="d-flex justify-center">
+                            @if (ProductDetails.InventoryProduct is null)
+                            {
+                                <MudText Typo="Typo.h6">Product not in Inventory</MudText>
+                            }
+                            else
+                            {
+                                @if (Loading)
+                                {
+                                    <LoadingSpinner />
+                                }
+                                else
+                                {
+                                    <MudButton OnClick="@AddToWebstore" Color="Color.Primary" Variant="Variant.Outlined">Add to Webstore</MudButton>
+                                }
+                            }
+                            
+                        </MudItem>
+                    </MudGrid>
+                </MudContainer>                    
+            }       
+        </MudTabPanel>
+    </MudTabs>
+
+</MudContainer>
+
+@code {
+    [Parameter] public ProductDetailsModel ProductDetails { get; set; } = new();
+    [Parameter] public string InitialTab { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    MudTabs? Tabs { get; set; } = new();
+    MudTabPanel? CatalogPanel { get; set; } = new();
+    MudTabPanel? InventoryPanel { get; set; } = new();
+    MudTabPanel? WebstorePanel { get; set; } = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (InitialTab == "Inventory")
+            {
+                Tabs!.ActivatePanel(InventoryPanel);
+            }
+        }        
+    }
+
+    private async Task GetInventoryProduct()
+    {
+        if (ProductDetails.InventoryProduct is null)
+        {
+            ProductDetails.InventoryProduct = await _inventory.FindInventoryProductByUPC(ProductDetails.UPC);
+        }        
+    }
+
+    private async Task GetWebstoreProduct()
+    {
+        if (ProductDetails.InventoryProduct is null)
+        {
+            await GetInventoryProduct();
+        }
+
+        if (ProductDetails.InventoryProduct is not null)
+        {
+            if (ProductDetails.WebstoreProduct is null)
+            {
+                BeginLoading();
+                ProductDetails.WebstoreProduct = await _webstoreProducts.GetProduct(ProductDetails.UPC);
+                FinishLoading();
+            }
+        }        
+    }
+
+    private async Task AddToInventory()
+    {
+        if (ProductDetails.CatalogProduct is not null)
+        {
+            var request = new CreateInventoryProductRequest
+            {
+                CatalogProductId = ProductDetails.CatalogProduct.Id,
+                Artist = ProductDetails.CatalogProduct.Artist,
+                Format = ProductDetails.CatalogProduct.Format,
+                StreetDate = DateTime.Parse(ProductDetails.CatalogProduct.StreetDate),
+                Title = ProductDetails.CatalogProduct.Title,
+                UPC = ProductDetails.CatalogProduct.UPC
+            };
+
+            ProductDetails.InventoryProduct = await _inventory.CreateInventoryProduct(request);
+        }
+        else
+        {
+            throw new Exception();
+        }
+
+    }
+    private async Task AddToWebstore()
+    {
+        if (ProductDetails.InventoryProduct is not null)
+        {
+            BeginLoading();
+            ProductDetails.WebstoreProduct = await _webstoreProducts.CreateDraftProduct(ProductDetails.InventoryProduct);
+            FinishLoading();
+        }
+        else
+        {
+            throw new Exception();
+        }
+    }
+}

@@ -1,0 +1,277 @@
+﻿@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductDetails
+@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductOnHand
+@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductPrice
+
+@inject IInventoryProductService _inventoryService
+@inject IJSRuntime JSInterop
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mud-theme-dark py-5">
+
+    <EditForm Model="@UpdateDetailsRequest" OnValidSubmit="SaveEdits">
+        <DataAnnotationsValidator />
+
+        <MudGrid Class="pb-3">
+            @if (priceChanging)
+            {
+                <MudItem xs="3" Class="d-flex align-center justify-center">
+                    <MudText Typo="Typo.h5">Price Change:</MudText>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudNumericField T="decimal" @bind-Value="PriceChangeRequest.NewPrice" For="@(() => PriceChangeRequest.NewPrice)" Label="New Price" Variant="Variant.Filled" Min="0.99m" />
+                </MudItem>
+                <MudItem xs="3">
+                    <MudTextField @bind-Value="PriceChangeRequest.Reason" For="@(() => PriceChangeRequest.Reason)" Label="Reason for Change" Variant="Variant.Filled"></MudTextField>
+                </MudItem>
+                <MudItem xs="3" Class="d-flex justify-end">
+                    <MudIconButton OnClick="SavePriceChange" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="TogglePriceChange" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            }
+            @if (onHandChanging)
+            {
+                <MudItem xs="3" Class="d-flex align-center justify-center">
+                    <MudText Typo="Typo.h5">On Hand Change:</MudText>
+                </MudItem>
+                <MudItem xs="3">
+                    <MudNumericField T="int" @bind-Value="OnHandChangeRequest.QuantityChange" For="@(() => OnHandChangeRequest.QuantityChange)" Label="Adjustment" Variant="Variant.Filled" />
+                </MudItem>
+                <MudItem xs="3">
+                    <MudTextField @bind-Value="OnHandChangeRequest.Reason" For="@(() => OnHandChangeRequest.Reason)" Label="Reason for Change" Variant="Variant.Filled"></MudTextField>
+                </MudItem>
+                <MudItem xs="3" Class="d-flex justify-end">
+                    <MudIconButton OnClick="SaveOnHand" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="ToggleOnHandChange" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudGrid>
+
+            <MudItem xs="1">
+                @if (!editing && !priceChanging && !onHandChanging)
+                {
+                    <MudIconButton OnClick="EditProduct" Icon="@Icons.Material.Filled.Edit" Color="Color.Warning" Size="Size.Large" Title="Edit" />
+                    <MudIconButton OnClick="PriceChange" Icon="@Icons.Material.Filled.PriceChange" Color="Color.Warning" Size="Size.Large" Title="Price Change" />
+                    <MudIconButton OnClick="OnHandChange" Icon="@Icons.Material.Filled.Exposure" Color="Color.Warning" Size="Size.Large" Title="On Hand Change" />
+                }
+                @if (editing)
+                {
+                    <MudIconButton OnClick="FormatArtistName" Icon="@Icons.Material.Filled.CompareArrows" Size="Size.Large" Title="Last, First" />
+                    <MudIconButton OnClick="TitleCase" Icon="@Icons.Material.Filled.SortByAlpha" Size="Size.Large" Title="Title Case" />
+                }
+            </MudItem>
+
+            <MudItem xs="7">
+
+                <MudPaper Class="pa-5">
+                    <MudGrid>
+                        @if (editing)
+                        {
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="UpdateDetailsRequest.Artist" For="@(() => UpdateDetailsRequest.Artist)" Label="Artist" Variant="Variant.Filled"></MudTextField>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="UpdateDetailsRequest.Title" For="@(() => UpdateDetailsRequest.Title)" Label="Title" Variant="Variant.Filled"></MudTextField>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudSelect T="string" @bind-Value="UpdateDetailsRequest.Department" For="@(() => UpdateDetailsRequest.Department)" On Label="Department" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (var department in ProductCategories.Departments)
+                                    {
+                                        <MudSelectItem Value="@department" />
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudSelect T="string" @bind-Value="UpdateDetailsRequest.Format" For="@(() => UpdateDetailsRequest.Format)" Label="Format" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                                    @switch (UpdateDetailsRequest.Department)
+                                    {
+                                        case "Apparel":
+                                            @foreach (var format in ProductCategories.Apparel)
+                                            {
+                                                <MudSelectItem Value="@format" />
+                                            }
+                                            break;
+                                        case "Book":
+                                            @foreach (var format in ProductCategories.Book)
+                                            {
+                                                <MudSelectItem Value="@format" />
+                                            }
+                                            break;
+                                        case "Media":
+                                            @foreach (var format in ProductCategories.Media)
+                                            {
+                                                <MudSelectItem Value="@format" />
+                                            }
+                                            break;
+                                        case "Toy":
+                                            @foreach (var format in ProductCategories.Toy)
+                                            {
+                                                <MudSelectItem Value="@format" />
+                                            }
+                                            break;
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudSelect T="string" @bind-Value="UpdateDetailsRequest.Genre" For="@(() => UpdateDetailsRequest.Genre)" Label="Genre" Variant="Variant.Filled" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (var genre in ProductMetaFields.MusicGenres)
+                                    {
+                                        <MudSelectItem Value="@genre" />
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudDatePicker @bind-Date="UpdateDetailsRequest.StreetDate" For="@(() => UpdateDetailsRequest.StreetDate)" Label="StreetDate" Variant="Variant.Filled" />
+                            </MudItem>
+                            <MudItem xs="12" Class="d-flex justify-end">
+                                <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                                <MudIconButton OnClick="ToggleEditing" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                            </MudItem>
+                        }
+                        else
+                        {
+                            <MudItem xs="12">
+                                <MudTextField Value="Product.Artist" Label="Artist" Variant="Variant.Text" ReadOnly="true"></MudTextField>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField Value="Product.Title" Label="Title" Variant="Variant.Text" ReadOnly="true"></MudTextField>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField Value="Product.Department" Label="Department" Variant="Variant.Text" ReadOnly="true" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField Value="Product.Format" Label="Format" Variant="Variant.Text" ReadOnly="true" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField Value="Product.Genre" Label="Genre" Variant="Variant.Text" ReadOnly="true" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField Value="Product.StreetDate" Label="StreetDate" Variant="Variant.Text" ReadOnly="true" />
+                            </MudItem>
+                        }
+                        
+                    </MudGrid>
+                </MudPaper>
+
+            </MudItem>
+            <MudItem xs="4">
+                <MudGrid>
+                    <MudItem xs="6" Class="d-flex align-center justify-end">
+                        <MudText Typo="Typo.h5">UPC:</MudText>
+                    </MudItem>
+                    <MudItem xs="6" Class="d-flex align-center justify-center">
+                        <MudText>@Product.UPC<MudIconButton OnClick="() => CopyToClipboard(Product.UPC)" Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary"></MudIconButton></MudText>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField Value="Product.Price" Label="Price" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField Value="Product.OnHand" Label="On Hand" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+
+        </MudGrid>
+    </EditForm>
+
+    @if (!editing)
+    {
+        @if (priceChanging)
+        {
+            <PriceHistoryDataGrid PriceHistory="Product.PriceHistory" />
+        }
+        @if (onHandChanging)
+        {
+            <OnHandHistoryDataGrid OnHandHistory="Product.OnHandHistory" />
+        }
+    }
+
+</MudContainer>
+
+@code {
+    [Parameter] public InventoryProductModel Product { get; set; } = new();
+
+    private UpdateProductDetailsRequest UpdateDetailsRequest { get; set; } = new UpdateProductDetailsRequest();
+    private UpdateProductPriceRequest PriceChangeRequest { get; set; } = new UpdateProductPriceRequest();
+    private UpdateProductOnHandRequest OnHandChangeRequest { get; set; } = new UpdateProductOnHandRequest();
+
+    private bool editing;
+    private void ToggleEditing() => editing = !editing;
+    private void EditProduct()
+    {
+        UpdateDetailsRequest.InventoryProductId = Product.Id;
+        UpdateDetailsRequest.Artist = Product.Artist;
+        UpdateDetailsRequest.Department = Product.Department;
+        UpdateDetailsRequest.Format = Product.Format;
+        UpdateDetailsRequest.Genre = Product.Genre;
+        UpdateDetailsRequest.StreetDate = Product.StreetDate;
+        UpdateDetailsRequest.Title = Product.Title;
+        UpdateDetailsRequest.UPC = Product.UPC;
+        ToggleEditing();
+    }
+    private void TitleCase()
+    {
+        UpdateDetailsRequest.Artist = UpdateDetailsRequest.Artist.ToTitleCase();
+        UpdateDetailsRequest.Title = UpdateDetailsRequest.Title.ToTitleCase();
+    }
+
+    private void FormatArtistName()
+    {
+        UpdateDetailsRequest.Artist = UpdateDetailsRequest.Artist.FormatArtistName();
+    }
+    private async Task SaveEdits()
+    {
+        await _inventoryService.UpdateProductDetails(UpdateDetailsRequest);
+
+        Product.Artist = UpdateDetailsRequest.Artist;
+        Product.Department = UpdateDetailsRequest.Department;
+        Product.Format = UpdateDetailsRequest.Format;
+        Product.Genre = UpdateDetailsRequest.Genre;
+        Product.StreetDate = UpdateDetailsRequest.StreetDate.Value;
+        Product.Title = UpdateDetailsRequest.Title;
+        Product.UPC = UpdateDetailsRequest.UPC;
+        ToggleEditing();
+    }
+
+    private bool onHandChanging;
+    private void ToggleOnHandChange() => onHandChanging = !onHandChanging;
+    private async Task OnHandChange()
+    {
+        Product.OnHandHistory = await _inventoryService.GetProductOnHandHistory(Product.Id);
+        OnHandChangeRequest.ProductId = Product.Id;
+        ToggleOnHandChange();
+    }
+    private async Task SaveOnHand()
+    {
+        var onHandChange = await _inventoryService.UpdateProductOnHand(OnHandChangeRequest);
+        Product.OnHand = onHandChange.NewOnHand;
+        Product.OnHandHistory.Add(onHandChange);
+        ToggleOnHandChange();
+        OnHandChangeRequest = new();
+    }
+
+    private bool priceChanging;
+    private void TogglePriceChange() => priceChanging = !priceChanging;
+    private async Task PriceChange()
+    {
+        Product.PriceHistory = await _inventoryService.GetProductPriceHistory(Product.Id);
+        PriceChangeRequest.ProductId = Product.Id;
+        PriceChangeRequest.NewPrice = Product.Price;
+        TogglePriceChange();
+    }
+    private async Task SavePriceChange()
+    {
+        var priceChange = await _inventoryService.UpdateProductPrice(PriceChangeRequest);
+        Product.Price = priceChange.NewPrice;
+        Product.PriceHistory.Add(priceChange);
+        TogglePriceChange();
+        PriceChangeRequest = new();
+    }
+    private async Task CopyToClipboard(string? text)
+    {
+        if (text is not null)
+        {
+            await JSInterop.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+    }
+}

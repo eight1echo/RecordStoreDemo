@@ -1,0 +1,115 @@
+﻿@using RecordStoreDemo.Features.Purchasing.PurchaseOrders.Commands.UpdatePurchaseOrderItem
+
+@inject IPurchaseOrderService _purchaseOrder
+@inject IJSRuntime JSInterop
+@inject NavigationManager _navigation
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mud-theme-dark py-5">
+
+    <MudGrid>
+
+        <MudItem xs="8">
+            <MudPaper Class="pa-5">
+
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudTextField Value="@CatalogProduct.Artist" Label="Artist" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField Value="@CatalogProduct.Title" Label="Title" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.Format" Label="Format" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.Description" Label="Description" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.SKU" Label="SKU" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.Label" Label="Label" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.StreetDate" Label="Date" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudTextField Value="@CatalogProduct.Cost" Label="Cost" Variant="Variant.Text" ReadOnly="true" />
+                    </MudItem>                  
+                </MudGrid>
+
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="4">
+            <MudGrid>
+                <MudItem xs="6" Class="d-flex align-center justify-end">
+                    <MudText Typo="Typo.h5">UPC:</MudText>
+                </MudItem>
+                <MudItem xs="6" Class="d-flex align-center justify-center">
+                    <MudText>@CatalogProduct.UPC<MudIconButton OnClick="() => CopyToClipboard(CatalogProduct.UPC)" Icon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary"></MudIconButton></MudText>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudTextField Value="@CatalogProduct.OrderedQuantity" Label="On Order" Variant="Variant.Text" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="4">
+                    <MudNumericField @bind-Value="@UpdateRequest.NewQuantity" Label="In Cart" Variant="Variant.Outlined" Min="1" />
+                </MudItem>
+                <MudItem xs="4" Class="d-flex align-center justify-center">
+                    @if (UpdateRequest.NewQuantity != CatalogProduct.CartQuantity)
+                    {
+                        <MudIconButton OnClick="UpdateCart" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                        <MudIconButton OnClick="() => UpdateRequest.NewQuantity = CatalogProduct.CartQuantity" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                    }
+                    else
+                    {
+                        @if (UpdateRequest.NewQuantity != 0)
+                        {
+                            <MudIconButton OnClick="RemoveFromCart" Color="Color.Error" Icon="@Icons.Material.Filled.Clear" Size="Size.Large" Title="Remove From Cart" />
+                        }
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+
+    </MudGrid>
+
+</MudContainer>
+
+@code {
+    [Parameter] public CatalogProductModel CatalogProduct { get; set; } = new();
+    [Parameter] public string UPC { get; set; } = string.Empty;
+
+    public UpdatePurchaseOrderItemRequest UpdateRequest { get; set; } = new UpdatePurchaseOrderItemRequest();
+
+    protected override void OnInitialized()
+    {
+        UpdateRequest = new UpdatePurchaseOrderItemRequest()
+        {
+            VendorId = CatalogProduct.VendorId,
+            CatalogProductId = CatalogProduct.Id,
+            NewQuantity = CatalogProduct.CartQuantity
+        };
+    }
+
+    private async Task RemoveFromCart()
+    {
+        await _purchaseOrder.DeleteItem(CatalogProduct.Id);
+        CatalogProduct.CartQuantity = 0;
+        UpdateRequest.NewQuantity = 0;
+    }
+
+    private async Task UpdateCart()
+    {
+        await _purchaseOrder.UpdateItem(UpdateRequest);
+        CatalogProduct.CartQuantity = UpdateRequest.NewQuantity;     
+    }
+
+    private async Task CopyToClipboard(string? text)
+    {
+        if (text is not null)
+        {
+            await JSInterop.InvokeVoidAsync("navigator.clipboard.writeText", text);
+        }
+    }
+}

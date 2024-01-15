@@ -1,0 +1,57 @@
+﻿@inject ICatalogService _catalogs
+
+@if (selected)
+{
+    <ProductDetailsComponent ProductDetails="ProductDetails" InitialTab="Inventory" OnClose="Close" />
+}
+else
+{
+    <MudDataGrid T="InventoryProductModel" Items="Products"
+                 Filterable="true" RowsPerPage="25" SortMode="SortMode.Multiple"
+                 Bordered="true" Dense="true"
+                 RowClick="SelectProduct" Hover="true">
+
+        <Columns>
+            <PropertyColumn Property="x => x.UPC" Filterable="false" />
+            <PropertyColumn Property="x => x.Artist" Filterable="false" />
+            <PropertyColumn Property="x => x.Title" Filterable="false" />
+            <PropertyColumn Property="x => x.Format" />
+            <PropertyColumn Property="x => x.Price" Filterable="false" />
+            <PropertyColumn Property="x => x.StreetDate" Title="Date" Filterable="false" />
+            <PropertyColumn Property="x => x.OnHand" Title="On Hand" Filterable="false" />
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="InventoryProductModel" />
+        </PagerContent>
+    </MudDataGrid>
+}
+
+@code {
+    [Parameter] public List<InventoryProductModel> Products { get; set; } = new();
+    [Parameter] public EventCallback<bool> OnProductSelected { get; set; }
+
+    private InventoryProductModel SelectedProduct { get; set; } = new();
+    private ProductDetailsModel ProductDetails { get; set; } = new();
+
+    private bool selected;
+    private void ToggleSelected() => selected = !selected;
+    private async Task SelectProduct(DataGridRowClickEventArgs<InventoryProductModel> clickArgs)
+    {
+        SelectedProduct = Products.Where(cp => cp.Id == clickArgs.Item.Id).First();
+
+        ProductDetails.UPC = SelectedProduct.UPC;
+        ProductDetails.CatalogProduct = await _catalogs.FindCatalogProductByUPC(SelectedProduct.UPC);
+        ProductDetails.InventoryProduct = SelectedProduct;
+
+        ToggleSelected();
+        await OnProductSelected.InvokeAsync(true);
+    }
+
+    private async Task Close()
+    {
+        ToggleSelected();
+        ProductDetails = new ProductDetailsModel();
+        await OnProductSelected.InvokeAsync(false);
+    }
+}

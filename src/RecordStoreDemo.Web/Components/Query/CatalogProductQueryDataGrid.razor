@@ -1,0 +1,87 @@
+﻿@inject ICatalogService _catalogs
+
+@if (selected)
+{
+    <ProductDetailsComponent ProductDetails="@ProductDetails" InitialTab="Catalog" OnClose="Close" />
+}
+else
+{
+    <MudDataGrid T="CatalogProductModel" Items="CatalogProducts"
+                 Filterable="true" RowsPerPage="25" SortMode="SortMode.Multiple"
+                 Bordered="true" Dense="true"
+                 RowClick="SelectProduct" Hover="true">
+
+        <Columns>
+            <PropertyColumn Property="x => x.VendorName" Title="Vendor" />
+            <PropertyColumn Property="x => x.UPC" Filterable="false" />
+            <PropertyColumn Property="x => x.Artist" Filterable="false" />
+            <PropertyColumn Property="x => x.Title" Filterable="false" />
+            <PropertyColumn Property="x => x.Format" HeaderStyle="max-width: 50px;" />
+            <PropertyColumn Property="x => x.StreetDate" Title="Date" Filterable="false" CellStyleFunc="@_cellStyleFutureRelease" />
+            <PropertyColumn Property="x => x.Cost" Filterable="false" HeaderStyle="max-width: 50px;" CellClass="d-flex justify-center" />
+            <PropertyColumn Property="x => x.OrderedQuantity" Title="Order" Filterable="false" Sortable="false" HeaderStyle="max-width: 50px;" CellStyleFunc="@_cellStyleOrderedQuantity" />
+            <PropertyColumn Property="x => x.CartQuantity" Title="Cart" Filterable="false" Sortable="false" HeaderStyle="max-width: 50px;" CellStyleFunc="@_cellStyleCartQuantity" />
+        </Columns>
+
+        <PagerContent>
+            <MudDataGridPager T="CatalogProductModel" />
+        </PagerContent>
+    </MudDataGrid>    
+}
+
+@code {
+    [Parameter] public List<CatalogProductModel> CatalogProducts { get; set; } = new ();
+    [Parameter] public EventCallback<bool> OnProductSelected { get; set; }
+
+    private CatalogProductModel SelectedProduct { get; set; } = new();
+    private ProductDetailsModel ProductDetails { get; set; } = new();
+
+    private bool selected;
+    private void ToggleSelected() => selected = !selected;
+    private async Task SelectProduct(DataGridRowClickEventArgs<CatalogProductModel> clickArgs)
+    {
+        SelectedProduct = CatalogProducts.Where(cp => cp.Id == clickArgs.Item.Id).First();
+        ProductDetails.CatalogProduct = SelectedProduct;
+        ProductDetails.UPC = SelectedProduct.UPC;
+
+        ToggleSelected();
+        await OnProductSelected.InvokeAsync(true);
+    }
+
+    private async Task Close()
+    {
+        ToggleSelected();
+        ProductDetails = new ProductDetailsModel();
+        await OnProductSelected.InvokeAsync(false);
+    }
+
+    private Func<CatalogProductModel, string> _cellStyleFutureRelease => x =>
+    {
+        string style = "";
+
+        if (DateTime.Parse(x.StreetDate) > DateTime.Now)
+            style += "background-color:#6949E9";
+
+        return style;
+    };
+
+    private Func<CatalogProductModel, string> _cellStyleOrderedQuantity => x =>
+    {
+        string style = "";
+
+        if (x.OrderedQuantity >= 1)
+            style += "color:#8CED8C";
+
+        return style;
+    };
+
+    private Func<CatalogProductModel, string> _cellStyleCartQuantity => x =>
+    {
+        string style = "";
+
+        if (x.CartQuantity >= 1)
+            style += "color:#EACE5D";
+
+        return style;
+    };
+}

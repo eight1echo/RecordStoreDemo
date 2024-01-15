@@ -1,0 +1,99 @@
+﻿@page "/query"
+@inherits LoadingComponent
+@inject ICatalogService _catalogs
+@inject IInventoryProductService _inventory
+
+@if (!hideSwitch)
+{
+    <MudPaper Class="pa-3">
+        <MudGrid>
+            <MudItem xs="1" Class="d-flex justify-center">
+                <MudChip Disabled="@activeDisabled" Variant="Variant.Text" Color="@ActiveColor">Inventory</MudChip>
+            </MudItem>
+            <MudItem xs="1" Class="d-flex justify-center">
+                <MudSwitch T="bool" Value="!inventoryQuery" ValueChanged="SwitchQueryTarget" Color="Color.Warning" UnCheckedColor="Color.Warning" />
+            </MudItem>
+            <MudItem xs="1" Class="d-flex justify-start">
+                <MudChip Disabled="@inactiveDisabled" Variant="Variant.Text" Color="@InactiveColor">Catalogs</MudChip>
+            </MudItem>
+            <MudItem xs="6" Class="d-flex justify-center">
+                <MudText Typo="Typo.h6">Query Results</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>    
+}
+
+@if (inventoryQuery)
+{
+    <InventoryProductQueryDataGrid 
+        Products="InventoryProducts"
+        OnProductSelected="(selected) => hideSwitch = selected" />
+}
+else
+{
+    <CatalogProductQueryDataGrid 
+        CatalogProducts="CatalogProducts" 
+        OnProductSelected="(selected) => hideSwitch = selected" />     
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Artist { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string UPC { get; set; } = string.Empty;
+
+    private List<InventoryProductModel> InventoryProducts { get; set; } = new();
+    private List<CatalogProductModel> CatalogProducts { get; set; } = new();
+
+    private bool inventoryQuery { get; set; } = true;
+    private void ToggleQueryTarget() => inventoryQuery = !inventoryQuery;
+
+    Color ActiveColor => (inventoryQuery) ? Color.Warning : Color.Default;
+    Color InactiveColor => (inventoryQuery) ? Color.Default : Color.Warning;
+
+    private bool hideSwitch;
+    private bool activeDisabled => (inventoryQuery) ? false : true;
+    private bool inactiveDisabled => (inventoryQuery) ? true : false;
+    private async Task SwitchQueryTarget()
+    {
+        ToggleQueryTarget();
+        await QueryProducts();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await QueryProducts();
+    }
+
+    private async Task QueryProducts()
+    {
+        @if (inventoryQuery)
+        {
+            await FindProducts();
+        }
+        else
+        {
+            await FindCatalogProducts();
+        }
+    }
+
+    private async Task FindProducts()
+    {
+        BeginLoading();
+        InventoryProducts = await _inventory.FindInventoryProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        FinishLoading();
+    }
+    private async Task FindCatalogProducts()
+    {
+        BeginLoading();
+        CatalogProducts = await _catalogs.FindCatalogProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        FinishLoading();
+    }
+}
