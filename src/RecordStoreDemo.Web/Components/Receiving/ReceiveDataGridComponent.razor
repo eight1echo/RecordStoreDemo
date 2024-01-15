@@ -1,0 +1,199 @@
+﻿@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductDetails
+@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductPrice
+@using RecordStoreDemo.Features.Receiving.Commands.UpdateReceiveItem
+
+@inject IReceiveService _receiving
+@inject IInventoryProductService _inventory
+
+<MudDataGrid Class="py-2"
+             T="ReceiveItemModel"
+             Dense="true"
+             Items="@Receive.Items"
+             RowsPerPage="15"
+             ReadOnly="false"
+             EditMode="DataGridEditMode.Form"
+             EditTrigger="DataGridEditTrigger.Manual"
+             StartedEditingItem="@ItemEditing"
+             CommittedItemChanges="@ItemChanged">
+
+    <ToolBarContent>
+        <MudGrid Class="px-5">
+            <MudItem xs="2" Class="d-flex align-center">
+                <MudText Typo="Typo.h6">Pending Receive</MudText>
+            </MudItem>
+            <MudItem xs="7" Class="d-flex align-center">
+                <MudText Typo="Typo.h6">Date: @Receive.DateCreated.ToShortDateString()</MudText>
+            </MudItem>
+                <MudItem xs="2" Class="d-flex align-center justify-end">
+                <MudText Typo="Typo.h6">Total Quantity: @Receive.Items.Select(i => i.Quantity).Sum()</MudText>
+            </MudItem>
+            <MudItem xs="1" Class="d-flex justify-end">
+                <MudIconButton OnClick="@SubmitReceive" Color="Color.Primary" Icon="@Icons.Material.Filled.IosShare" Size="Size.Large" Title="Submit Order" />
+            </MudItem>
+        </MudGrid>
+    </ToolBarContent>
+
+    <Columns>
+        <PropertyColumn Property="x => x.Product.UPC" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Artist">
+            <EditTemplate>
+                <MudTextField @bind-Value="context.Item.Product.Artist" For="@(() => context.Item.Product.Artist)" Label="Artist" Variant="Variant.Filled"></MudTextField>
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Product.Title">
+            <EditTemplate>
+                <MudTextField @bind-Value="context.Item.Product.Title" For="@(() => context.Item.Product.Title)" Label="Title" Variant="Variant.Filled"></MudTextField>
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Product.Department">
+            <EditTemplate>
+                <MudSelect @bind-Value="context.Item.Product.Department" Required RequiredError="You must select a Department" Margin="@Margin.Dense">
+                     @foreach (var department in ProductCategories.Departments)
+                    {
+                        <MudSelectItem Value="@department" />
+                    }
+                 </MudSelect>
+             </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Product.Format">
+            <EditTemplate>
+                <MudSelect @bind-Value="context.Item.Product.Format" Required RequiredError="You must select a Department" Margin="@Margin.Dense">
+                     @switch (context.Item.Product.Department)
+                    {
+                        case "Apparel":
+                            @foreach (var format in ProductCategories.Apparel)
+                            {
+                                <MudSelectItem Value="@format" />
+                            }
+                            break;
+                        case "Book":
+                            @foreach (var format in ProductCategories.Book)
+                            {
+                                <MudSelectItem Value="@format" />
+                            }
+                            break;
+                        case "Media":
+                            @foreach (var format in ProductCategories.Media)
+                            {
+                                <MudSelectItem Value="@format" />
+                            }
+                            break;
+                        case "Toy":
+                            @foreach (var format in ProductCategories.Toy)
+                            {
+                                <MudSelectItem Value="@format" />
+                            }
+                            break;
+                    }
+                </MudSelect>
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Product.Genre">
+            <EditTemplate>
+                <MudSelect @bind-Value="context.Item.Product.Genre" Margin="@Margin.Dense">
+                     @foreach (var genre in ProductMetaFields.MusicGenres)
+                    {
+                        <MudSelectItem Value="@genre" />
+                    }
+                </MudSelect>
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Cost" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Price">
+            <EditTemplate>
+                <MudNumericField T="decimal" @bind-Value="context.Item.Product.Price" For="@(() => context.Item.Product.Price)" Label="New Price" Variant="Variant.Filled" Min="0.00m" />
+            </EditTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Quantity" CellStyle="max-width: 10px;">
+            <EditTemplate >
+                <MudNumericField T="int" @bind-Value="context.Item.Quantity" For="@(() => context.Item.Quantity)" Label="Quantity" Variant="Variant.Filled" Min="1" />
+            </EditTemplate>
+        </PropertyColumn>
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudIconButton Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="ReceiveItemModel" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Parameter] public ReceiveModel Receive { get; set; } = new();
+    [Parameter] public EventCallback<ReceiveModel> OnSubmitted { get; set; }
+
+    private ReceiveItemModel InitialState { get; set; } = new();
+    public UpdateReceiveItemRequest UpdateRequest { get; set; } = new();
+
+    private void ItemEditing(ReceiveItemModel item)
+    {
+        InitialState = new ReceiveItemModel
+        {
+            Quantity = item.Quantity,
+            Product = new InventoryProductModel
+            {
+                Artist = item.Product.Artist,
+                Department = item.Product.Department,
+                Format = item.Product.Format,
+                Genre = item.Product.Genre,
+                Price = item.Product.Price,
+                Title = item.Product.Title
+            },
+        };
+    }
+    private async void ItemChanged(ReceiveItemModel item)
+    {
+        if (InitialState.DetailsChanged(item))
+        {
+            var updateDetailsRequest = new UpdateProductDetailsRequest()
+            {
+                InventoryProductId = item.ProductId,
+                Artist = item.Product.Artist,
+                Department = item.Product.Department,
+                Format = item.Product.Format,
+                Genre = item.Product.Genre,
+                StreetDate = item.Product.StreetDate,
+                Title = item.Product.Title,
+                UPC = item.Product.UPC,
+            };
+
+            await _inventory.UpdateProductDetails(updateDetailsRequest);
+        }
+
+        if (InitialState.Quantity != item.Quantity)
+        {
+            var updateItemRequest = new UpdateReceiveItemRequest()
+            {
+                ReceiveId = Receive.Id,
+                InventoryProductId = item.ProductId,
+                NewQuantity = item.Quantity
+            };
+
+            await _receiving.UpdateReceiveItem(updateItemRequest);
+        }
+
+        if (InitialState.Product.Price != item.Product.Price)
+        {
+            var updatePriceRequest = new UpdateProductPriceRequest()
+            {
+                ProductId = item.ProductId,
+                NewPrice = item.Product.Price,
+                Reason = "Receive"
+            };
+
+            await _inventory.UpdateProductPrice(updatePriceRequest);
+        }                      
+    }
+    private async Task SubmitReceive()
+    {
+        Receive.DateSubmitted = DateTime.Now;
+        Receive.TotalItems = Receive.Items.Select(i => i.Quantity).Sum();
+
+        await _receiving.SubmitReceive(Receive.VendorId);
+
+        await OnSubmitted.InvokeAsync(Receive);
+    }
+}

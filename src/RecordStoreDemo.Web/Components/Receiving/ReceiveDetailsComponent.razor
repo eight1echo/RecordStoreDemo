@@ -1,0 +1,136 @@
+﻿@using RecordStoreDemo.Features.Receiving.Commands.AddItemToReceive
+@using RecordStoreDemo.Features.Receiving.Queries.GetItemToReceive
+@inject IReceiveService _receiving
+
+<MudPaper Class="mud-theme-dark pa-5">
+    <MudGrid>
+        <MudItem xs="2" Class="d-flex align-center justify-end">
+            <MudText Typo="Typo.h5">Receiving For:</MudText>
+        </MudItem>
+        <MudItem xs="3">
+            <MudTextField Value="@SelectedVendor.Name" Label="Name" Variant="Variant.Text" ReadOnly="true" />
+        </MudItem>
+        <MudItem xs="1"></MudItem>
+        <MudItem xs="3">
+            <EditForm Model="@GetItemRequest" OnValidSubmit="GetItemToReceive">
+                <MudTextField @bind-Value="GetItemRequest.UPC" Placeholder="Add to Receive" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" />
+            </EditForm>
+        </MudItem>
+        <MudItem xs="3" Class="d-flex justify-end">
+            <MudIconButton OnClick="Close" Icon="@Icons.Material.Outlined.Cancel" Size="Size.Large" Title="Close" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (itemStaged)
+{
+    <MudContainer Class="mt-5" MaxWidth="MaxWidth.ExtraLarge">
+        <MudPaper Class="pa-5">
+            <EditForm Model="AddItemRequest" OnValidSubmit="AddItemToReceive">
+                <DataAnnotationsValidator />
+                <MudGrid>
+                    <MudItem xs="2">
+                        <MudTextField Value="AddItemRequest.Product.UPC" Label="UPC" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField Value="AddItemRequest.Product.Artist" Label="Artist" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField Value="AddItemRequest.Product.Title" Label="Title" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudTextField Value="AddItemRequest.Product.Department" Label="Department" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudTextField Value="AddItemRequest.Product.Format" Label="Format" Variant="Variant.Outlined" ReadOnly="true" />
+                    </MudItem>
+                    <MudItem xs="1">
+                        <MudNumericField T="int" @bind-Value="AddItemRequest.Quantity" For="@(() => AddItemRequest.Quantity)" Label="Quantity" Variant="Variant.Filled" Min="1" />
+                    </MudItem>
+                    <MudItem xs="1" Class="d-flex justify-end">
+                        <MudIconButton OnClick="AddItemToReceive" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                        <MudIconButton OnClick="Cancel" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudPaper>
+    </MudContainer>
+}
+
+<MudContainer Class="mt-5" MaxWidth="MaxWidth.ExtraLarge">
+    <MudGrid>
+        <MudItem xs="12">
+            @if (Receive is not null)
+            {
+                <ReceiveDataGridComponent Receive="@Receive" />
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    [Parameter] public VendorModel SelectedVendor { get; set; } = new();
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ReceiveModel Receive { get; set; } = new();
+    private ReceiveItemModel ReceiveItem { get; set; } = new();
+
+    public GetItemToReceiveRequest GetItemRequest { get; set; } = new();
+    public AddItemToReceiveRequest AddItemRequest { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Receive = await _receiving.GetPendingReceive(SelectedVendor.Id);
+    }
+
+    private bool itemStaged;
+    private void ToggleItemStaged() => itemStaged = !itemStaged;
+    private async Task GetItemToReceive()
+    {
+        if (itemStaged)
+        {
+            if (AddItemRequest.UPC == GetItemRequest.UPC)
+            {
+                AddItemRequest.Quantity += 1;
+                return;
+            }            
+            else
+            {
+                await AddItemToReceive();
+            }                        
+        }
+
+        AddItemRequest = await _receiving.GetItemToReceive(GetItemRequest);
+
+        AddItemRequest.ReceiveId = Receive.Id;
+        AddItemRequest.Quantity = 1;
+        ToggleItemStaged();     
+    }
+    private async Task AddItemToReceive()
+    {        
+        var item = await _receiving.AddItemToReceive(AddItemRequest);
+
+        var existing = Receive.Items.Where(i => i.Product.UPC == item.Product.UPC).FirstOrDefault();
+        if (existing is not null)
+        {
+            existing.Quantity = item.Quantity;
+        }
+        else
+        {
+            Receive.Items.Add(item);
+        }
+
+        AddItemRequest = new();
+        GetItemRequest = new();
+        ToggleItemStaged();
+    }
+    private void Cancel()
+    {
+        AddItemRequest = new();
+        ToggleItemStaged();
+    }
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

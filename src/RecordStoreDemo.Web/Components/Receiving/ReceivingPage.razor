@@ -1,0 +1,67 @@
+﻿@page "/receiving"
+@inherits LoadingComponent
+@inject IVendorService _vendors
+
+@if (selected)
+{
+    <ReceiveDetailsComponent 
+        SelectedVendor="@SelectedVendor" 
+        OnClose="ToggleSelected"/>
+}
+else
+{
+<MudContainer Class="mt-5" MaxWidth="MaxWidth.Large">
+    <MudDataGrid T="VendorModel" Items="Vendors"
+                 Dense="true"
+                 Loading="Loading" LoadingProgressColor="Color.Warning"
+                 RowClick="SelectVendor" Hover="true"
+                 QuickFilter="SearchFilter">
+
+        <ToolBarContent>
+            @if (!selected)
+            {
+                <MudSpacer />
+                <MudText Typo="Typo.h6">Vendors</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="@searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>               
+            }
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Name" />
+        </Columns>
+    </MudDataGrid>
+</MudContainer>
+}
+
+@code {
+    private List<VendorModel> Vendors { get; set; } = [];
+    private VendorModel SelectedVendor { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        BeginLoading();
+        Vendors = await _vendors.ListVendors();
+        FinishLoading();
+    }
+
+    private string searchString = string.Empty;
+    private Func<VendorModel, bool> SearchFilter => x =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        if (x.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private bool selected;
+    private void ToggleSelected() => selected = !selected;
+    private void SelectVendor(DataGridRowClickEventArgs<VendorModel> clickArgs)
+    {
+        SelectedVendor = clickArgs.Item;
+        ToggleSelected();
+    }
+}
