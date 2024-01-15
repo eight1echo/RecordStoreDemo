@@ -1,6 +1,6 @@
 ﻿namespace RecordStoreDemo.Features.Receiving.Commands.AddItemToReceive;
 
-public class AddItemToReceiveEndpoint(IReceiveRepository _receivingRepo) : EndpointBaseAsync
+public class AddItemToReceiveEndpoint(IInventoryProductRepository _inventoryRepo, IReceiveRepository _receivingRepo) : EndpointBaseAsync
     .WithRequest<AddItemToReceiveRequest>
     .WithResult<ActionResult<ReceiveItemModel>>
 {
@@ -15,8 +15,9 @@ public class AddItemToReceiveEndpoint(IReceiveRepository _receivingRepo) : Endpo
       CancellationToken cancellationToken = default)
     {
         var receive = await _receivingRepo.GetReceive(request.ReceiveId);
+        var inventoryProduct = await _inventoryRepo.GetProduct(request.InventoryProductId);
 
-        var item = new ReceiveItem(request.ReceiveId, request.InventoryProductId, request.CatalogProductId, request.Quantity);
+        var item = new ReceiveItem(request.ReceiveId, inventoryProduct.Id, inventoryProduct.CatalogProductId, request.Quantity);
         item = receive.AddItem(item);
 
         await _receivingRepo.Update(receive);
@@ -24,19 +25,20 @@ public class AddItemToReceiveEndpoint(IReceiveRepository _receivingRepo) : Endpo
         var result = new ReceiveItemModel()
         {
             Id = item.Id,
-            Cost = item.CatalogProduct.Cost.Value,
+            Cost = inventoryProduct.CatalogProduct.Cost.Value,
             ProductId = item.InventoryProductId,
             Quantity = item.Quantity,
 
             Product = new InventoryProductModel()
             {
-                Artist = item.InventoryProduct.Artist,
-                Department = item.InventoryProduct.Category.Department,
-                Format = item.InventoryProduct.Category.Format,
-                Genre = item.InventoryProduct.Genre,
-                Price = item.InventoryProduct.Price.Value,
-                Title = item.InventoryProduct.Title,
-                UPC = item.InventoryProduct.UPC.Value,
+                Artist = inventoryProduct.Artist,
+                Department = inventoryProduct.Category.Department,
+                Format = inventoryProduct.Category.Format,
+                Genre = inventoryProduct.Genre,
+                Price = inventoryProduct.Price.Value,
+                StreetDate = inventoryProduct.StreetDate,
+                Title = inventoryProduct.Title,
+                UPC = inventoryProduct.UPC.Value,
             }
         };
 

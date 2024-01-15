@@ -1,4 +1,4 @@
-﻿namespace RecordStoreDemo.Features.Receiving.Requests;
+﻿namespace RecordStoreDemo.Features.Receiving.Queries.GetItemToReceive;
 
 public class GetItemToReceiveRequest
 {

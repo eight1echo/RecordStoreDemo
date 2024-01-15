@@ -4,7 +4,7 @@ public class SubmitReceiveEndpoint(IReceiveRepository _receiveRepo) : EndpointBa
     .WithRequest<Guid>
     .WithResult<ActionResult>
 {
-    [HttpPost("api/receiving/submit")]
+    [HttpPost("api/receiving/submit/{vendorId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [SwaggerOperation(
         Summary = "Submit Receive",

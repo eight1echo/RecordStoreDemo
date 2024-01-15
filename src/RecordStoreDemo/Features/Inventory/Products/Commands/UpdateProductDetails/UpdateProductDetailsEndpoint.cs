@@ -7,7 +7,7 @@ public class UpdateProductDetailsEndpoint(IInventoryProductRepository productsRe
     [HttpPut("api/inventory/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
-        Summary = "Update Product's Details",
+        Summary = "Update Inventory Product's Details",
         OperationId = "Products_Update",
         Tags = new[] { "Inventory" })]
     public override async Task<ActionResult<InventoryProductModel>> HandleAsync(

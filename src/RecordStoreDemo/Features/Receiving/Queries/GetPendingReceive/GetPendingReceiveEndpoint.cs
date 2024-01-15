@@ -38,6 +38,7 @@ public class GetPendingReceiveEndpoint(RecordStoreDbContext _context) : Endpoint
                         Format = i.InventoryProduct.Category.Format,
                         Genre = i.InventoryProduct.Genre,
                         Price = i.InventoryProduct.Price.Value,
+                        StreetDate = i.InventoryProduct.StreetDate,
                         Title = i.InventoryProduct.Title,
                         UPC = i.InventoryProduct.UPC.Value
                     }

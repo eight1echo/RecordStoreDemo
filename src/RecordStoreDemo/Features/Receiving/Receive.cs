@@ -61,16 +61,12 @@ public class Receive : BaseEntity
 
         foreach (var item in _items)
         {
-            item.InventoryProduct.OnHandAdjustment(item.Quantity, $"Received on {DateSubmitted.ToShortDateString()}");
-
-            var difference = item.CatalogProduct.OrderedQuantity - item.Quantity;
-
-            item.CatalogProduct.AdjustOrderedQuantity(difference);
-            item.InventoryProduct.OnHandAdjustment(item.Quantity, "Received");
+            item.InventoryProduct.OnHandAdjustment(item.Quantity, $"Received on {DateTime.Now.ToShortDateString()}");
+            item.CatalogProduct.AdjustOrderedQuantity(-item.Quantity);
         }
 
         Status = ReceiveStatus.Submitted;
-        DateSubmitted = DateTime.UtcNow;
+        DateSubmitted = DateTime.Now;
     }
 
     private ReceiveItem? GetItem(Guid inventoryProductId)

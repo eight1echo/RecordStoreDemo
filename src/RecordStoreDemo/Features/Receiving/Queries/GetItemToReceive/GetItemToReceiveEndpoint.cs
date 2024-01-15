@@ -22,13 +22,12 @@ public class GetItemToReceiveEndpoint(RecordStoreDbContext _context) : EndpointB
             .Where(p => p.UPC.Value == upc)
             .Select(p => new AddItemToReceiveRequest
             {
-                CatalogProductId = p.CatalogProductId,
                 InventoryProductId = p.Id,
                 Quantity = 1,
                 UPC = p.UPC.Value,
-                UpdateRequest = new UpdateProductDetailsRequest
+                Product = new InventoryProductModel
                 {
-                    InventoryProductId = p.Id,
+                    Id = p.Id,
                     Artist = p.Artist,
                     Department = p.Category.Department,
                     Format = p.Category.Format,

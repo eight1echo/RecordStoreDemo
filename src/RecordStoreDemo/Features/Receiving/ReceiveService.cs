@@ -1,6 +1,7 @@
 ﻿using RecordStoreDemo.Features.Receiving.Commands.AddItemToReceive;
 using RecordStoreDemo.Features.Receiving.Commands.CreateReceive;
 using RecordStoreDemo.Features.Receiving.Commands.UpdateReceiveItem;
+using RecordStoreDemo.Features.Receiving.Queries.GetItemToReceive;
 
 namespace RecordStoreDemo.Features.Receiving;
 
@@ -46,9 +47,9 @@ public class ReceiveService : IReceiveService
             throw new Exception();
     }
 
-    public async Task<AddItemToReceiveRequest> GetItemToReceive(string upc)
+    public async Task<AddItemToReceiveRequest> GetItemToReceive(GetItemToReceiveRequest request)
     {
-        var response = await _httpClient.GetAsync($"items/{upc}");
+        var response = await _httpClient.GetAsync($"items/{request.UPC}");
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<AddItemToReceiveRequest>()
@@ -83,7 +84,7 @@ public class ReceiveService : IReceiveService
 
     public async Task SubmitReceive(Guid vendorId)
     {
-        var response = await _httpClient.PostAsync($"{vendorId}", null);
+        var response = await _httpClient.PostAsync($"submit/{vendorId}", null);
         response.EnsureSuccessStatusCode();
     }
 
