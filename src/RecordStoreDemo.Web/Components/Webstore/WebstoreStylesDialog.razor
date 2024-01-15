@@ -1,0 +1,50 @@
+﻿@inject IWebstoreMetaFieldService _shopifyMetaFields
+
+<MudDialog>
+    <DialogContent>
+        @if (!string.IsNullOrEmpty(Product.Title))
+        {
+            <MudGrid Class="pb-3">
+                <MudItem xs="6" Class="d-flex justify-end">
+                    <MudText Class="mt-5" Typo="Typo.h6">STYLES</MudText>
+                </MudItem>
+                <MudItem xs="6" Class="d-flex align-center justify-end">
+                    <MudIconButton OnClick="UpdateStyles" Icon="@Icons.Material.Filled.Save" Color="Color.Success" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="() => MudDialog!.Cancel()" Icon="@Icons.Material.Filled.DoNotDisturb" Color="Color.Error" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            </MudGrid>
+
+            <MudChipSet @bind-SelectedChips="selectedStyles" MultiSelection="true">
+                @foreach (var style in ProductMetaFields.MusicStyles)
+                {
+                    <MudChip Text="@style" Variant="Variant.Outlined" SelectedColor="Color.Primary" Default="@SelectionHelpers.IsStyleSelected(Product, style)"></MudChip>
+                }
+            </MudChipSet>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public WebstoreProductModel Product { get; set; } = new WebstoreProductModel();
+
+    MudChip[]? selectedStyles;
+
+    private async Task UpdateStyles()
+    {
+        Product.Styles.Clear();
+
+        if (selectedStyles is not null && selectedStyles.Length > 0)
+        {
+            foreach (var style in selectedStyles)
+            {
+                Product.Styles.Add(style.Text);
+            }
+        }
+
+        await _shopifyMetaFields.UpdateStyles(Product);
+
+        MudDialog!.Close(Product);
+    }
+}

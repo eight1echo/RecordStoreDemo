@@ -1,0 +1,50 @@
+﻿@inject IWebstoreMetaFieldService _shopifyMetafields
+
+<MudDialog>
+    <DialogContent>
+        @if (!string.IsNullOrEmpty(Product.Title))
+        {
+            <MudGrid Class="pb-3">
+                <MudItem xs="6" Class="d-flex justify-end">
+                    <MudText Class="mt-5" Typo="Typo.h6">GENRES</MudText>
+                </MudItem>
+                <MudItem xs="6" Class="d-flex align-center justify-end">
+                    <MudIconButton OnClick="UpdateGenres" Icon="@Icons.Material.Filled.Save" Color="Color.Success" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="() => MudDialog!.Cancel()" Icon="@Icons.Material.Filled.DoNotDisturb" Color="Color.Error" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            </MudGrid>
+
+            <MudChipSet @bind-SelectedChips="selectedGenres" MultiSelection="true">
+                @foreach (var genre in ProductMetaFields.MusicGenres)
+                {
+                    <MudChip Text="@genre" Variant="Variant.Outlined" SelectedColor="Color.Primary" Default="@SelectionHelpers.IsGenreSelected(Product, genre)"></MudChip>
+                }
+            </MudChipSet>
+        }
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public WebstoreProductModel Product { get; set; } = new WebstoreProductModel();
+
+    MudChip[]? selectedGenres;
+
+    private async Task UpdateGenres()
+    {
+        Product.Genres.Clear();
+
+        if (selectedGenres is not null && selectedGenres.Length > 0)
+        {
+            foreach (var genre in selectedGenres)
+            {
+                Product.Genres.Add(genre.Text);
+            }
+        }
+
+        await _shopifyMetafields.UpdateGenres(Product);
+
+        MudDialog!.Close(Product);
+    }
+}
