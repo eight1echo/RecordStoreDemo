@@ -1,0 +1,25 @@
+﻿<MudDataGrid 
+    Class="pa-3 mt-5" 
+    RowsPerPage="5"
+    T="OnHandHistoryModel" Items="OnHandHistory">
+
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">On Hand History</MudText>
+    </ToolBarContent>
+
+    <Columns>
+        <PropertyColumn Property="x => x.Date" />
+        <PropertyColumn Property="x => x.QuantityChange" Title="Quantity Change" />
+        <PropertyColumn Property="x => x.NewOnHand" Title="New On Hand" />
+        <PropertyColumn Property="x => x.Reason" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="OnHandHistoryModel" />
+    </PagerContent>
+
+</MudDataGrid>
+
+@code {
+    [Parameter] public List<OnHandHistoryModel> OnHandHistory { get; set; } = [];
+}

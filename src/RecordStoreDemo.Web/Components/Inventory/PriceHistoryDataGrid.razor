@@ -1,0 +1,25 @@
+﻿<MudDataGrid 
+    Class="pa-3 mt-5"
+    RowsPerPage="5"
+    T="PriceHistoryModel" Items="PriceHistory">
+
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Price History</MudText>
+    </ToolBarContent>
+
+    <Columns>
+        <PropertyColumn Property="x => x.Date" />
+        <PropertyColumn Property="x => x.OldPrice" Title="Old Price" />
+        <PropertyColumn Property="x => x.NewPrice" Title="New Price"/>
+        <PropertyColumn Property="x => x.Reason" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="PriceHistoryModel" />
+    </PagerContent>
+
+</MudDataGrid>
+
+@code {
+    [Parameter] public List<PriceHistoryModel> PriceHistory { get; set; } = [];
+}
