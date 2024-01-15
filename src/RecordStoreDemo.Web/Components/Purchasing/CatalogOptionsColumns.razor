@@ -1,0 +1,70 @@
+﻿@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.UpdateCatalogOptions
+
+<MudSelect @bind-Value="@UpdateRequest.ArtistColumn" Label="Artist" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.CostColumn" Label="Cost" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.StreetDateColumn" Label="Date" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.DescriptionColumn" Label="Description" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.FormatColumn" Label="Format" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.LabelColumn" Label="Label" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.SKUColumn" Label="SKU / Cat#" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.TitleColumn" Label="Title" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+<MudSelect @bind-Value="@UpdateRequest.UPCColumn" Label="UPC" Variant="Variant.Filled">
+    <MudSelectItem Value="@NotApplicable" />
+    @foreach (var letter in Enum.GetValues(typeof(CatalogAlphabet)))
+    {
+        <MudSelectItem Value="@letter.ToString()" />
+    }
+</MudSelect>
+
+@code {
+    [Parameter] public UpdateCatalogOptionsRequest UpdateRequest { get; set; } = new();
+    private string NotApplicable = "N/A";
+}

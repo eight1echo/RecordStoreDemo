@@ -1,0 +1,48 @@
+﻿@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.UpdateCatalogOptions
+@inject ICatalogService _catalogs
+
+<EditForm Model="UpdateRequest" OnValidSubmit="@SaveOptions">
+    <DataAnnotationsValidator />
+
+    <MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
+        <MudPaper Class="mud-theme-dark px-5 pb-3">
+            <MudGrid Class="pb-3">
+                <MudItem xs="3">
+
+                </MudItem>
+                <MudItem xs="6" Class="d-flex align-center justify-center">
+                    <MudText Typo="Typo.h5">Edit Catalog Options</MudText>
+                </MudItem>
+                <MudItem xs="3" Class="d-flex justify-end">
+                    <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="() => OnCancel.InvokeAsync()" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            </MudGrid>
+
+            <MudPaper Class="pa-5" Elevation="10">
+                <MudGrid Class="px-5">
+                    <MudItem xs="8" Class="d-flex justify-center">
+                        <MudCheckBox @bind-Value="@UpdateRequest.HasHeader" Label="Header Row?" Color="Color.Primary" Size="Size.Large"></MudCheckBox>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <CatalogOptionsColumns UpdateRequest="UpdateRequest" />
+                    </MudItem>                
+                </MudGrid>
+            </MudPaper>
+        </MudPaper>
+    </MudContainer>
+
+</EditForm>
+
+@code {
+    [Parameter] public UpdateCatalogOptionsRequest UpdateRequest { get; set; } = new();
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<CatalogModel> OnSuccess { get; set; }
+
+    private async Task SaveOptions()
+    {
+        var result = await _catalogs.UpdateCatalogOptions(UpdateRequest);
+        await OnSuccess.InvokeAsync(result);
+    }
+}

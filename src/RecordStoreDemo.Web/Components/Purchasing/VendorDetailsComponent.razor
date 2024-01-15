@@ -1,0 +1,152 @@
+﻿@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.ImportCatalogProducts
+@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.UpdateCatalogOptions
+@using RecordStoreDemo.Features.Purchasing.Vendors.Queries.GetVendorDetails
+
+@inject ICatalogService _catalogs
+@inject IVendorService _vendors
+
+<MudPaper Class="mud-theme-dark pa-5">
+    <MudGrid>
+        @if (!editing)
+        {
+            <MudItem xs="1" Class="d-flex justify-center">
+                <MudIconButton OnClick="EditCatalogOptions" Icon="@Icons.Material.Filled.SaveAs" Color="Color.Warning" Size="Size.Large" Title="Edit Catalog" />
+            </MudItem>
+            <MudItem xs="1">
+                <MudFileUpload T="IBrowserFile" FilesChanged="UploadCatalog">
+                    <ButtonTemplate>                       
+                        @if (uploading)
+                        {
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <MudIconButton 
+                                HtmlTag="label"
+                                Icon="@Icons.Material.Filled.UploadFile"
+                                Color="Color.Warning"
+                                Size="Size.Large"
+                                Title="Upload Catalog"
+                                for="@context">
+                            </MudIconButton>
+                        }
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudItem>
+        }
+        else
+        {
+            <MudItem xs="2"></MudItem>
+        }
+        
+        <MudItem xs="3" Class="d-flex align-center justify-end">
+            <MudText Typo="Typo.h5">Vendor:</MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudTextField Value="@Vendor.Name" Label="Name" Variant="Variant.Text" ReadOnly="true" />
+        </MudItem>
+        <MudItem xs="2"></MudItem>
+        <MudItem xs="1" Class="d-flex justify-end">
+            <MudIconButton OnClick="Close" Icon="@Icons.Material.Outlined.Cancel" Size="Size.Large" Title="Close"/>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@if (editing)
+{
+    <CatalogOptionsComponent UpdateRequest="@UpdateRequest" OnCancel="ToggleEditing" OnSuccess="CatalogOptionsSaved" />
+}
+else
+{
+    <MudContainer Class="mt-5" MaxWidth="MaxWidth.ExtraLarge">
+        <MudGrid>
+
+            <MudItem xs="9">
+                @if (Vendor.PendingOrder is not null)
+                {
+                    <PurchaseOrderItemDataGrid PurchaseOrder="@Vendor.PendingOrder" OnSubmitted="(submittedOrder) => Vendor.PastOrders.Add(submittedOrder)" />
+                }
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudDataGrid T="PurchaseOrderModel" Items="@Vendor.PastOrders">
+                    <ToolBarContent>
+                        <MudSpacer />
+                        <MudText Typo="Typo.h6">Past Orders</MudText>
+                        <MudSpacer />
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.DateSubmitted.ToShortDateString()" Title="Date "/>
+                        <PropertyColumn Property="x => x.TotalItems"  Title="Items" />
+                        <PropertyColumn Property="x => x.TotalCost" Title="Total" />
+                    </Columns>
+                </MudDataGrid>
+            </MudItem>
+
+        </MudGrid>
+    </MudContainer>
+}
+
+@code {
+    [Parameter] public VendorModel SelectedVendor { get; set; } = new();
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private UpdateCatalogOptionsRequest UpdateRequest { get; set; } = new();
+    private ImportCatalogProductsRequest ImportRequest { get; set; } = new();
+
+    private VendorDetailsModel Vendor { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vendor = await _vendors.GetVendor(SelectedVendor.Id);
+    }
+
+    private bool editing;
+    private void ToggleEditing() => editing = !editing;
+    private void EditCatalogOptions()
+    {
+        ToggleEditing();
+        UpdateRequest = new UpdateCatalogOptionsRequest
+        {
+            VendorId = Vendor.Id,
+            FileType = Vendor.Catalog.FileType,
+            HasHeader = Vendor.Catalog.HasHeader,
+
+            ArtistColumn = Vendor.Catalog.ArtistColumn,
+            CostColumn = Vendor.Catalog.CostColumn,
+            DescriptionColumn = Vendor.Catalog.DescriptionColumn,
+            FormatColumn = Vendor.Catalog.FormatColumn,
+            LabelColumn = Vendor.Catalog.LabelColumn,
+            SKUColumn = Vendor.Catalog.SKUColumn,
+            StreetDateColumn = Vendor.Catalog.StreetDateColumn,
+            TitleColumn = Vendor.Catalog.TitleColumn,
+            UPCColumn = Vendor.Catalog.UPCColumn,
+        };
+    }
+    private void CatalogOptionsSaved(CatalogModel updatedCatalog)
+    {
+        Vendor.Catalog = updatedCatalog;
+        ToggleEditing();
+    }
+
+    private bool uploading;
+    private void ToggleUploading() => uploading = !uploading;
+    private async Task UploadCatalog(IBrowserFile file)
+    {
+        ToggleUploading();
+        ImportRequest.VendorId = SelectedVendor.Id;
+
+        await _catalogs.UploadCatalog(Vendor.Name, file);
+
+        var catalogProducts = await _catalogs.CatalogProductsFromCSV(Vendor.Id, Vendor.Name, Vendor.Catalog);
+        ImportRequest.CatalogProducts = catalogProducts;
+
+        var newProducts = await _catalogs.ImportCatalogProducts(ImportRequest);
+        ToggleUploading();
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

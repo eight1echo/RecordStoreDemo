@@ -1,0 +1,45 @@
+﻿@using RecordStoreDemo.Features.Purchasing.Vendors.Commands.CreateVendor
+@inject IVendorService _vendors
+
+<EditForm Model="@CreateRequest" OnValidSubmit="@CreateVendor">
+    <DataAnnotationsValidator />
+
+    <MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
+        <MudPaper Class="mud-theme-dark px-5 pb-3">
+            <MudGrid Class="pb-3">
+                <MudItem xs="3">
+
+                </MudItem>
+                <MudItem xs="6" Class="d-flex align-center justify-center">
+                    <MudText Typo="Typo.h5">New Vendor</MudText>
+                </MudItem>
+                <MudItem xs="3" Class="d-flex justify-end">
+                    <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                    <MudIconButton OnClick="() => OnCancel.InvokeAsync()" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                </MudItem>
+            </MudGrid>
+
+            <MudPaper Class="pa-5" Elevation="10">
+                <MudGrid Class="px-5">
+                    <MudItem xs="12" Class="pa-5">
+                        <MudTextField @bind-Value="CreateRequest.Name" For="@(() => CreateRequest.Name)" Label="Vendor Name" Variant="Variant.Outlined"></MudTextField>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudPaper>
+
+    </MudContainer>
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<VendorModel> OnSuccess { get; set; }
+
+    private CreateVendorRequest CreateRequest { get; set; } = new();
+
+    private async Task CreateVendor()
+    {
+        var result = await _vendors.CreateVendor(CreateRequest);
+        await OnSuccess.InvokeAsync(result);
+    }
+}

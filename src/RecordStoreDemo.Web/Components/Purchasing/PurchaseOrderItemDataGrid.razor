@@ -1,0 +1,96 @@
+﻿@using RecordStoreDemo.Features.Purchasing.PurchaseOrders.Commands.UpdatePurchaseOrder
+@inject IPurchaseOrderService _purchaseOrder
+
+<MudDataGrid Class="py-2"
+    T="PurchaseOrderItemModel" 
+    Dense="true"
+    Items="@PurchaseOrder.Items"
+    RowsPerPage="15"
+    ReadOnly="false"
+    EditMode="DataGridEditMode.Cell" 
+    CommittedItemChanges="@ItemChanged">
+
+    <ToolBarContent>
+        <MudGrid Class="px-5">
+            <MudItem xs="3" Class="d-flex align-center">
+                <MudText Typo="Typo.h6">Pending Order</MudText>
+            </MudItem>
+            <MudItem xs="3" Class="d-flex align-center">
+                <MudText Typo="Typo.h6">Date: @PurchaseOrder.DateCreated.ToShortDateString()</MudText>
+            </MudItem>
+                <MudItem xs="3" Class="d-flex align-center">
+                    <MudText Typo="Typo.h6">Total: @PurchaseOrder.TotalCost</MudText>
+            </MudItem>
+            <MudItem xs="3" Class="d-flex justify-end">
+                @if (editing)
+                {
+                    <MudIconButton OnClick="@SaveOrder" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                }
+                else
+                {
+                    <MudIconButton OnClick="@SubmitOrder" Color="Color.Primary" Icon="@Icons.Material.Filled.IosShare" Size="Size.Large" Title="Submit Order" />
+                }
+            </MudItem>            
+        </MudGrid>                   
+    </ToolBarContent>
+
+    <Columns>
+        <PropertyColumn Property="x => x.Product.UPC" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Artist" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Title" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Format" IsEditable="false" />
+        <PropertyColumn Property="x => x.Product.Cost" IsEditable="false" />
+        <PropertyColumn Property="x => x.Quantity" CellStyle="max-width: 10px;" Sortable="false" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="PurchaseOrderItemModel" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Parameter] public PurchaseOrderModel PurchaseOrder { get; set; } = new();
+    [Parameter] public EventCallback<PurchaseOrderModel> OnSubmitted { get; set; }
+
+    private UpdatePurchaseOrderRequest UpdateRequest { get; set; } = new();
+
+    private bool editing;
+    private void ToggleEditing() => editing = !editing;
+    private void ItemChanged(PurchaseOrderItemModel item)
+    {
+        if (!editing)
+            ToggleEditing();
+
+        if (item.Quantity <= 0)
+            PurchaseOrder.Items.Remove(item);
+
+        UpdateTotalCost();
+    }
+
+    private async Task SaveOrder()
+    {
+        UpdateRequest.VendorId = PurchaseOrder.VendorId;
+        UpdateRequest.Items = PurchaseOrder.Items;
+
+        await _purchaseOrder.UpdateOrder(UpdateRequest);
+        ToggleEditing();
+    }
+
+    private async Task SubmitOrder()
+    {
+        PurchaseOrder.DateSubmitted = DateTime.Now;
+        PurchaseOrder.TotalItems = PurchaseOrder.Items.Select(i => i.Quantity).Sum();
+
+        await _purchaseOrder.SubmitOrder(PurchaseOrder.VendorId);
+        await OnSubmitted.InvokeAsync(PurchaseOrder);
+
+        PurchaseOrder = new() { DateCreated = DateTime.Now };
+    }
+
+    private void UpdateTotalCost()
+    {
+        PurchaseOrder.TotalCost = PurchaseOrder.Items
+            .Select(i => i.Quantity * i.Product.Cost)
+            .Sum();
+    }
+}
