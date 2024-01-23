@@ -1,11 +1,18 @@
 ﻿namespace RecordStoreDemo.Common.ValueObjects;
 
-public class EmailAddress(string value) : BaseValueObject
+public class EmailAddress : BaseValueObject
 {
-    public string Address { get; set; } = Guard.Against.InvalidEmail(value, nameof(EmailAddress));
+    public EmailAddress(string value)
+    {
+        Address = Guard.Against.InvalidEmail(value, nameof(value));
+    }
+
+    public string Address { get; set; } = null!;
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Address;
     }
+
+    private EmailAddress() { } // Required for EF
 }

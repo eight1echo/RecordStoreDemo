@@ -67,4 +67,20 @@ public static class HelperExtensions
 
         return newString;
     }
+
+    public static string ToSpacedRewardsCard(this string str)
+    {
+        if (str == string.Empty)
+            return "None Attached";
+
+        var cardNumber = $"{str.Substring(0, 3)}  {str.Substring(3, 3)}  {str.Substring(6, 3)}";
+
+        return cardNumber;
+    }
+    public static string FromSpacedRewardsCard(this string str)
+    {
+        var cardNumber = str.Replace(" ", "");
+
+        return cardNumber;
+    }
 }

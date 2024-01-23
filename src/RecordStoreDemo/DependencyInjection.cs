@@ -17,9 +17,12 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationFeatures(this IServiceCollection services)
     {
         services.AddHttpClient<ICatalogService, CatalogService>();
+        services.AddHttpClient<ICustomerProfileService, CustomerProfileService>();
         services.AddHttpClient<IInventoryProductService, InventoryProductService>();
         services.AddHttpClient<IPurchaseOrderService, PurchaseOrderService>();
         services.AddHttpClient<IReceiveService, ReceiveService>();
+        services.AddHttpClient<IRewardsCardService, RewardsCardService>();
+        services.AddHttpClient<ISpecialOrderService, SpecialOrderService>();
         services.AddHttpClient<IVendorService, VendorService>();
 
         services.AddTransient<IWebstoreCollectionService, WebstoreCollectionService>();
@@ -75,6 +78,7 @@ public static class DependencyInjection
         services.AddDbContext<RecordStoreDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddTransient<ICustomerProfileRepository, CustomerProfileRepository>();
         services.AddTransient<IInventoryProductRepository, InventoryProductRepository>();
         services.AddTransient<IPurchaseOrderRepository, PurchaseOrderRepository>();
         services.AddTransient<IReceiveRepository, ReceiveRepository>();
