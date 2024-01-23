@@ -1,7 +1,11 @@
-﻿@using RecordStoreDemo.Features.Inventory.Products.Commands.CreateInventoryProduct
+﻿@using RecordStoreDemo.Features.Customers.SpecialOrders.Commands.CreateSpecialOrder
+@using RecordStoreDemo.Features.Inventory.Products.Commands.CreateInventoryProduct
+
 @inherits LoadingComponent
 @inject ICatalogService _catalogs
+@inject ICustomerProfileService _customers
 @inject IInventoryProductService _inventory
+@inject ISpecialOrderService _specialOrders
 @inject IWebstoreProductService _webstoreProducts
 
 <MudContainer Fixed="true">
@@ -63,12 +67,71 @@
                                 {
                                     <MudButton OnClick="@AddToWebstore" Color="Color.Primary" Variant="Variant.Outlined">Add to Webstore</MudButton>
                                 }
-                            }
-                            
+                            }                            
                         </MudItem>
                     </MudGrid>
                 </MudContainer>                    
             }       
+        </MudTabPanel>
+
+        <MudTabPanel @ref="SpecialOrderPanel" Text="Special Orders" OnClick="GetSpecialOrders">
+            @if (ProductDetails.InventoryProduct is not null)
+            {
+                @if (addingOrder)
+                {
+                    <EditForm Model="CreateOrderRequest" OnValidSubmit="CreateSpecialOrder">
+                        <MudGrid Class="pa-3">
+                            <MudItem xs="4">
+                                <MudTextField T="string" Text="@customerQuery" TextChanged="FilterCustomers" Immediate="true" Label="Search Customers" Variant="Variant.Filled" />
+                            </MudItem>
+                            @if (customerQuery == string.Empty)
+                            {
+                                <MudItem xs="4">
+                                    <MudTextField Value="@string.Empty" ReadOnly="true" Variant="Variant.Filled" Label="Select Customer" />
+                                </MudItem>
+                            }
+                            else
+                            {
+                                <MudItem xs="4">
+                                    <MudSelect @bind-Value="CreateOrderRequest.CustomerProfileId" Label="Select Customer" Variant="Variant.Filled">
+                                        @foreach (var customer in FilteredCustomers)
+                                        {
+                                            <MudSelectItem Value="customer.Id">@customer.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>                            
+                            }
+                            <MudItem xs="2">
+                                <MudNumericField @bind-Value="@CreateOrderRequest.Quantity" Label="Quantity" Variant="Variant.Outlined" Min="1" />
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex justify-end">
+                                <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                                <MudIconButton OnClick="Cancel" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                            </MudItem>
+                        </MudGrid>
+                    </EditForm>
+                }
+                else
+                {
+                    <MudGrid>
+                        <MudItem xs="12" Class="d-flex justify-end">
+                            <MudIconButton OnClick="AddSpecialOrder" Icon="@Icons.Material.Outlined.PostAdd" Color="Color.Success" Size="Size.Large" Title="Add" />
+                        </MudItem>
+                    </MudGrid>
+                }
+                
+                <ProductSpecialOrdersDataGrid SpecialOrders="ProductDetails.SpecialOrders" />             
+            }
+            else
+            {
+                <MudContainer Class="mt-5 pa-5" MaxWidth="MaxWidth.Medium">
+                    <MudGrid>
+                        <MudItem xs="12" Class="d-flex justify-center">
+                            <MudText Typo="Typo.h6">Product not in Inventory</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudContainer>
+            }
         </MudTabPanel>
     </MudTabs>
 
@@ -82,7 +145,13 @@
     MudTabs? Tabs { get; set; } = new();
     MudTabPanel? CatalogPanel { get; set; } = new();
     MudTabPanel? InventoryPanel { get; set; } = new();
+    MudTabPanel? SpecialOrderPanel { get; set; } = new();
     MudTabPanel? WebstorePanel { get; set; } = new();
+
+    private CreateSpecialOrderRequest CreateOrderRequest { get; set; } = new();
+    private List<CustomerProfileModel> Customers { get; set; } = [];
+    private List<CustomerProfileModel> FilteredCustomers { get; set; } = [];
+    private string customerQuery = string.Empty;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -97,6 +166,11 @@
 
     private async Task GetInventoryProduct()
     {
+        if (ProductDetails.CatalogProduct is null)
+        {
+            ProductDetails.CatalogProduct = await _catalogs.FindCatalogProductByUPC(ProductDetails.UPC);
+        }
+
         if (ProductDetails.InventoryProduct is null)
         {
             ProductDetails.InventoryProduct = await _inventory.FindInventoryProductByUPC(ProductDetails.UPC);
@@ -119,6 +193,16 @@
                 FinishLoading();
             }
         }        
+    }
+
+    private async Task GetSpecialOrders()
+    {
+        if (ProductDetails.InventoryProduct is null)
+        {
+            await GetInventoryProduct();
+        }
+
+        ProductDetails.SpecialOrders = await _specialOrders.GetProductSpecialOrders(ProductDetails.InventoryProduct!.Id);
     }
 
     private async Task AddToInventory()
@@ -155,5 +239,38 @@
         {
             throw new Exception();
         }
+    }
+
+    private void FilterCustomers(string query)
+    {
+        customerQuery = query;
+        FilteredCustomers = Customers.Where(c => c.Name.Contains(customerQuery, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+        if (FilteredCustomers.Any())
+        {
+            CreateOrderRequest.CustomerProfileId = FilteredCustomers.First().Id;
+        }        
+    }
+
+    private bool addingOrder = false;
+    private void ToggleAddingOrder() => addingOrder = !addingOrder;
+    private async Task AddSpecialOrder()
+    {
+        ToggleAddingOrder();
+        Customers = await _customers.ListCustomers();
+        CreateOrderRequest.InventoryProductId = ProductDetails.InventoryProduct!.Id;
+    }
+    private async Task CreateSpecialOrder()
+    {
+        var order = await _specialOrders.CreateSpecialOrder(CreateOrderRequest);
+        ProductDetails.CatalogProduct!.CartQuantity += CreateOrderRequest.Quantity;
+        ProductDetails.SpecialOrders.Add(order);
+        Cancel();
+    }
+    private void Cancel()
+    {
+        customerQuery = string.Empty;
+        CreateOrderRequest = new();
+        ToggleAddingOrder();
     }
 }

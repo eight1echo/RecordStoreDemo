@@ -1,4 +1,5 @@
-﻿using RecordStoreDemo.Features.Inventory.Products;
+﻿using RecordStoreDemo.Features.Customers.SpecialOrders;
+using RecordStoreDemo.Features.Inventory.Products;
 using RecordStoreDemo.Features.Purchasing.Catalogs;
 using RecordStoreDemo.Features.Webstore.Products;
 
@@ -8,6 +9,7 @@ public class ProductDetailsModel
     public CatalogProductModel? CatalogProduct { get; set; }
     public InventoryProductModel? InventoryProduct { get; set; }
     public WebstoreProductModel? WebstoreProduct { get; set; }
+    public List<SpecialOrderModel> SpecialOrders { get; set; } = [];
 
     public string UPC { get; set; } = string.Empty;
     public bool IsConsignment { get; set; }

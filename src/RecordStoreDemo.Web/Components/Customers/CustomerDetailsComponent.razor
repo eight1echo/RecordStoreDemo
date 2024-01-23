@@ -1,0 +1,159 @@
+﻿@using RecordStoreDemo.Features.Customers.Profiles.Queries.GetCustomerDetails
+@using RecordStoreDemo.Features.Customers.Rewards.Commands.AddRewardsTransaction
+@using RecordStoreDemo.Features.Customers.Rewards.Commands.AttachRewardsCard
+@inject ICustomerProfileService _customers
+@inject IRewardsCardService _rewards
+
+<MudPaper Class="mud-theme-dark pa-5">
+    <MudGrid>
+        <MudItem xs="3" Class="d-flex align-center justify-end">
+            <MudText Typo="Typo.h5">Customer:</MudText>
+        </MudItem>
+        <MudItem xs="3">
+            <MudTextField Value="@Customer.Name" Label="Name" Variant="Variant.Text" ReadOnly="true" />
+        </MudItem>
+        <MudItem xs="3">
+            <MudTextField Value="@Customer.Contact" Label="Contact" Variant="Variant.Text" ReadOnly="true" />
+        </MudItem>
+        <MudItem xs="2"></MudItem>
+        <MudItem xs="1" Class="d-flex justify-end">
+            <MudIconButton OnClick="Close" Icon="@Icons.Material.Outlined.Cancel" Size="Size.Large" Title="Close" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudGrid>
+        <MudItem xs="4">
+            <MudGrid Class="pa-3">
+                @if (!attachingCard && !addingRewards)
+                {
+                    <MudItem xs="5" Class="d-flex align-center justify-end">
+                        <MudText Typo="Typo.h6">Rewards Card Number:</MudText>
+                    </MudItem>
+                    <MudItem xs="5" Class="d-flex align-center justify-center">
+                        <MudText Typo="Typo.h6">@Customer.RewardsCard.Number</MudText>
+                    </MudItem>
+                    <MudItem xs="2" Class="d-flex justify-end">
+                        @if (Customer.RewardsCard.Number == "None Attached")
+                        {
+                            <MudIconButton OnClick="AttachRewardsCard" Color="Color.Success" Icon="@Icons.Material.Filled.AddCard" Size="Size.Large" Title="Cancel" />
+                        }
+                        else
+                        {
+                            <MudIconButton OnClick="AddTransaction" Color="Color.Success" Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Large" Title="Cancel" />
+                        }
+                    </MudItem>
+                }
+                else
+                {
+                    @if (attachingCard)
+                    {
+                        <MudItem xs="12">
+                            <EditForm Model="AttachRequest" OnValidSubmit="ConfirmAttachment">
+                                <DataAnnotationsValidator />
+                                <MudGrid>
+                                    <MudItem xs="4">
+
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudTextField @bind-Value="AttachRequest.CardNumber" For="() => AttachRequest.CardNumber" MaxLength="9" Variant="Variant.Filled" />
+                                    </MudItem>
+                                    <MudItem xs="4" Class="d-flex justify-end">
+                                        <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                                        <MudIconButton OnClick="Cancel" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                                    </MudItem>
+                                </MudGrid>
+                            </EditForm>
+                        </MudItem>                        
+                    }
+                    @if (addingRewards)
+                    {
+                        <MudItem xs="12">
+                            <EditForm Model="AddTransactionRequest" OnValidSubmit="ConfirmRewardsTransaction">
+                                <DataAnnotationsValidator />
+                                <MudGrid>
+                                    <MudItem xs="4" Class="d-flex align-center justify-end">
+                                        <MudText Typo="Typo.h6">Points Change:</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4">
+                                        <MudNumericField T="int" @bind-Value="AddTransactionRequest.PointsChange" For="() => AddTransactionRequest.PointsChange" Variant="Variant.Filled" />
+                                    </MudItem>
+                                    <MudItem xs="4" Class="d-flex justify-end">
+                                        <MudIconButton ButtonType="ButtonType.Submit" Color="Color.Success" Icon="@Icons.Material.Filled.Save" Size="Size.Large" Title="Save" />
+                                        <MudIconButton OnClick="Cancel" Color="Color.Error" Icon="@Icons.Material.Filled.DoNotDisturb" Size="Size.Large" Title="Cancel" />
+                                    </MudItem>
+                                </MudGrid>
+                            </EditForm>
+                        </MudItem>
+                    }
+                }
+
+            </MudGrid>
+            <RewardsPointsHistoryDataGrid RewardsCard="Customer.RewardsCard" />
+        </MudItem>
+        <MudItem xs="8" Class="mt-4">
+            <CustomerSpecialOrdersDataGrid SpecialOrders="Customer.SpecialOrders" />
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    [Parameter] public CustomerProfileModel SelectedCustomer { get; set; } = new();
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private CustomerDetailsModel Customer { get; set; } = new();
+
+    private AddRewardsTransactionRequest AddTransactionRequest { get; set; } = new();
+    private AttachRewardsCardRequest AttachRequest { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Customer = await _customers.GetCustomerDetails(SelectedCustomer.Id);
+    }
+
+    private bool attachingCard;
+    private void ToggleAttaching() => attachingCard = !attachingCard;
+    private void AttachRewardsCard()
+    {
+        AttachRequest.CustomerProfileId = Customer.Id;
+        ToggleAttaching();
+    }
+    private async Task ConfirmAttachment()
+    {
+        Customer.RewardsCard = await _rewards.AttachRewardsCard(AttachRequest);
+        ToggleAttaching();
+        AttachRequest = new();
+    }
+
+    private bool addingRewards;
+    private void ToggleAdding() => addingRewards = !addingRewards;
+    private void AddTransaction()
+    {
+        AddTransactionRequest.CustomerProfileId = Customer.Id;
+        AddTransactionRequest.CardNumber = Customer.RewardsCard.Number;
+        ToggleAdding();
+    }
+    private async Task ConfirmRewardsTransaction()
+    {
+        var transaction = await _rewards.AddTransaction(AddTransactionRequest);
+        Customer.RewardsCard.Transactions.Add(transaction);
+        Customer.RewardsCard.Points += transaction.PointsChange;
+        ToggleAdding();
+        AddTransactionRequest = new();
+    }
+
+    private void Cancel()
+    {
+        AddTransactionRequest = new();
+        addingRewards = false;
+
+        AttachRequest = new();
+        attachingCard = false;
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

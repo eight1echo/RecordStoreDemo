@@ -1,0 +1,34 @@
+﻿<MudDataGrid T="SpecialOrderModel" Items="SpecialOrders"
+             Filterable="true" RowsPerPage="25" SortMode="SortMode.Multiple"
+             Bordered="true" Dense="true"
+             RowClick="SelectOrder" Hover="true">
+
+    <Columns>
+        <PropertyColumn Property="x => x.CustomerProfile.Name" Filterable="false" />
+        <PropertyColumn Property="x => x.CustomerProfile.Contact" Filterable="false" />
+        <PropertyColumn Property="x => x.Status" Filterable="false" />
+        <PropertyColumn Property="x => x.DateOrdered" Title="Ordered On" Filterable="false" />
+        <PropertyColumn Property="x => x.DateReceived" Title="Received On" Filterable="false" />
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="SpecialOrderModel" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Parameter] public List<SpecialOrderModel> SpecialOrders { get; set; } = new();
+    private SpecialOrderModel SelectedOrder { get; set; } = new();
+
+    [Parameter] public EventCallback<bool> OnOrderSelected { get; set; }
+
+    private bool selected;
+    private void ToggleSelected() => selected = !selected;
+    private async Task SelectOrder(DataGridRowClickEventArgs<SpecialOrderModel> clickArgs)
+    {
+        SelectedOrder = SpecialOrders.Where(cp => cp.Id == clickArgs.Item.Id).First();
+
+        ToggleSelected();
+        await OnOrderSelected.InvokeAsync(true);
+    }
+}
