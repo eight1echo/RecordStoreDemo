@@ -16,6 +16,7 @@ public class InventoryProductRepository : BaseRepository<InventoryProduct>, IInv
             .Include(p => p.CatalogProduct)
             .Include(p => p.OnHandHistory)
             .Include(p => p.PriceHistory)
+            .Include(p => p.SpecialOrders)
             .FirstOrDefaultAsync()
             ?? throw new EntityNotFoundException(productId);
 

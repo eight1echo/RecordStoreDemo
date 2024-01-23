@@ -17,6 +17,7 @@ public class ReceiveRepository : BaseRepository<Receive>, IReceiveRepository
                 .ThenInclude(i => i.CatalogProduct)
             .Include(r => r.Items)
                 .ThenInclude(i => i.InventoryProduct)
+                .ThenInclude(p => p.SpecialOrders)
             .FirstOrDefaultAsync()
             ?? throw new EntityNotFoundException(receiveId);
 
@@ -31,6 +32,7 @@ public class ReceiveRepository : BaseRepository<Receive>, IReceiveRepository
                 .ThenInclude(i => i.CatalogProduct)
             .Include(r => r.Items)
                 .ThenInclude(i => i.InventoryProduct)
+                .ThenInclude(p => p.SpecialOrders)
             .FirstOrDefaultAsync()
             ?? throw new EntityNotFoundException(vendorId);
 
@@ -45,6 +47,7 @@ public class ReceiveRepository : BaseRepository<Receive>, IReceiveRepository
                 .ThenInclude(i => i.CatalogProduct)
             .Include(r => r.Items)
                 .ThenInclude(i => i.InventoryProduct)
+                .ThenInclude(p => p.SpecialOrders)
             .FirstOrDefaultAsync()
             ?? throw new Exception($"No Pending Receive exists containing a Product with Id:{productId}");
 

@@ -4,7 +4,7 @@ public class UpdateProductPriceEndpoint(IInventoryProductRepository _productsRep
     .WithRequest<UpdateProductPriceRequest>
     .WithResult<ActionResult<PriceHistoryModel>>
 {
-    [HttpPut("api/inventory/{id}/price")]
+    [HttpPut("api/inventory/price")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Make a Price Adjustment",

@@ -4,7 +4,7 @@ public class GetPriceHistoryEndpoint(RecordStoreDbContext _context) : EndpointBa
     .WithRequest<Guid>
     .WithResult<ActionResult<List<PriceHistoryModel>>>
 {
-    [HttpGet("api/inventory/{id}/price")]
+    [HttpGet("api/inventory/price/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Get Price History",

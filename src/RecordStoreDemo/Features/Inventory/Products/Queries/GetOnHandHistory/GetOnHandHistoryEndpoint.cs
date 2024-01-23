@@ -4,7 +4,7 @@ public class GetOnHandHistoryEndpoint(RecordStoreDbContext _context) : EndpointB
     .WithRequest<Guid>
     .WithResult<ActionResult<List<OnHandHistoryModel>>>
 {
-    [HttpGet("api/inventory/{id}/onhand")]
+    [HttpGet("api/inventory/onhand/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Get On Hand History",

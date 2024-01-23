@@ -63,6 +63,22 @@ public class Receive : BaseEntity
         {
             item.InventoryProduct.OnHandAdjustment(item.Quantity, $"Received on {DateTime.Now.ToShortDateString()}");
             item.CatalogProduct.AdjustOrderedQuantity(-item.Quantity);
+
+            var specialOrders = item.InventoryProduct.SpecialOrders.Where(so => so.Status == SpecialOrderStatus.Ordered).ToList();
+
+            if (specialOrders.Count > 0)
+            {
+                var receivedQuantity = item.Quantity;
+
+                foreach (var order in specialOrders)
+                {
+                    if (receivedQuantity == 0)                    
+                        break;
+                    
+                    order.ReceiveOrder();
+                    receivedQuantity -= 1;
+                }
+            }
         }
 
         Status = ReceiveStatus.Submitted;

@@ -4,7 +4,7 @@ public class UpdateProductOnHandEndpoint(IInventoryProductRepository _productsRe
     .WithRequest<UpdateProductOnHandRequest>
     .WithResult<ActionResult<OnHandHistoryModel>>
 {
-    [HttpPut("api/inventory/{id}/onhand")]
+    [HttpPut("api/inventory/onhand")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Make an On Hand Adjustment",

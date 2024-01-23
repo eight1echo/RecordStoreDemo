@@ -4,7 +4,7 @@ public class UpdateProductDetailsEndpoint(IInventoryProductRepository productsRe
     .WithRequest<UpdateProductDetailsRequest>
     .WithResult<ActionResult<InventoryProductModel>>
 {
-    [HttpPut("api/inventory/{id}")]
+    [HttpPut("api/inventory/details")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Update Inventory Product's Details",

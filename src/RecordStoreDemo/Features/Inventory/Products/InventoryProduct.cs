@@ -27,6 +27,9 @@ public class InventoryProduct : BaseEntity
     private readonly List<PriceChange> _priceHistory = [];
     public virtual ICollection<PriceChange> PriceHistory => _priceHistory.AsReadOnly();
 
+    private readonly List<SpecialOrder> _specialOrders = [];
+    public virtual ICollection<SpecialOrder> SpecialOrders => _specialOrders.AsReadOnly();
+
     public void SetDetails(string artist, string department, string format, string genre, DateTime streetDate, string title, string upc)
     {
         Artist = Guard.Against.NullOrWhiteSpace(artist, nameof(Artist));

@@ -56,7 +56,7 @@ public class InventoryProductService : IInventoryProductService
 
     public async Task<List<PriceHistoryModel>> GetProductPriceHistory(Guid id)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<PriceHistoryModel>>($"{id}/price");
+        var response = await _httpClient.GetFromJsonAsync<List<PriceHistoryModel>>($"price/{id}");
 
         if (response is not null)
         {
@@ -69,7 +69,7 @@ public class InventoryProductService : IInventoryProductService
 
     public async Task<List<OnHandHistoryModel>> GetProductOnHandHistory(Guid id)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<OnHandHistoryModel>>($"{id}/onhand/");
+        var response = await _httpClient.GetFromJsonAsync<List<OnHandHistoryModel>>($"onhand/{id}");
 
         if (response is not null)
         {
@@ -82,7 +82,7 @@ public class InventoryProductService : IInventoryProductService
 
     public async Task<OnHandHistoryModel> UpdateProductOnHand(UpdateProductOnHandRequest request)
     {
-        var response = await _httpClient.PutAsJsonAsync($"{request.ProductId}/onhand", request);
+        var response = await _httpClient.PutAsJsonAsync($"onhand", request);
 
         var result = await response.Content.ReadFromJsonAsync<OnHandHistoryModel>();
 
@@ -97,7 +97,7 @@ public class InventoryProductService : IInventoryProductService
 
     public async Task<PriceHistoryModel> UpdateProductPrice(UpdateProductPriceRequest request)
     {
-        var response = await _httpClient.PutAsJsonAsync($"{request.ProductId}/price", request);
+        var response = await _httpClient.PutAsJsonAsync($"price", request);
 
         var result = await response.Content.ReadFromJsonAsync<PriceHistoryModel>();
 
@@ -112,7 +112,7 @@ public class InventoryProductService : IInventoryProductService
 
     public async Task UpdateProductDetails(UpdateProductDetailsRequest request)
     {
-        var response = await _httpClient.PutAsJsonAsync($"{request.InventoryProductId}", request);
+        var response = await _httpClient.PutAsJsonAsync($"details", request);
         response.EnsureSuccessStatusCode();
     }
 }
