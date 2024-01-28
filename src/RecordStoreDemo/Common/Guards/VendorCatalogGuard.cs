@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Ardalis.GuardClauses;
+﻿namespace Ardalis.GuardClauses;
 
 public static class VendorCatalogGuard
 {

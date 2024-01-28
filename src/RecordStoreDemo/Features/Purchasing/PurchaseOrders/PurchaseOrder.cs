@@ -21,6 +21,9 @@ public class PurchaseOrder : BaseEntity
     public PurchaseOrderStatus Status { get; private set; }
     public DateTime DateSubmitted { get; private set; }
 
+    /// <summary>
+    /// Add a CatalogProduct to the PurchaseOrder with a given quantity.
+    /// </summary>
     public PurchaseOrderItem AddItem(CatalogProduct product, int quantity)
     {
         var item = new PurchaseOrderItem(product, quantity);
@@ -30,7 +33,10 @@ public class PurchaseOrder : BaseEntity
 
         return item;
     }
-    
+
+    /// <summary>
+    /// Remove a CatalogProduct from the PurchaseOrder.
+    /// </summary>
     public void RemoveItem(Guid catalogProductId)
     {
         var item = GetItem(catalogProductId);
@@ -39,6 +45,10 @@ public class PurchaseOrder : BaseEntity
         item.CatalogProduct.AdjustCartQuantity(-item.Quantity);
         UpdateTotal(item.CatalogProduct.Cost, -item.Quantity);
     }
+
+    /// <summary>
+    /// Update a PurchaseOrderItem in the PurchaseOrder with a new quantity.
+    /// </summary>
     public PurchaseOrderItem UpdateItem(Guid catalogProductId, int newQuantity)
     {
         var item = GetItem(catalogProductId);
@@ -48,8 +58,12 @@ public class PurchaseOrder : BaseEntity
         UpdateTotal(item.CatalogProduct.Cost, difference);
 
         return item;
-    }    
+    }
 
+    /// <summary>
+    /// Submit a PurchaseOrder. 
+    /// CatalogProducts included in the order will have their CartQuantity reduced and OrderQuantity increased by the respective quantities.
+    /// </summary>
     public void Submit()
     {
         if (Status != PurchaseOrderStatus.Pending)

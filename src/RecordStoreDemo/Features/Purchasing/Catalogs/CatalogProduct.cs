@@ -35,10 +35,17 @@ public class CatalogProduct : BaseEntity
     public int CartQuantity { get; private set; }
     public int OrderedQuantity { get; private set; }
 
+    /// <summary>
+    /// Adjust the quantity currently On Order. To be called upon submition of a PurchaseOrder.
+    /// </summary>
     public void AdjustOrderedQuantity(int quantityChange)
     {
         OrderedQuantity += quantityChange;
     }
+
+    /// <summary>
+    /// Adjust the quantity currently In Cart. To be called upon addition or deletion of a PurchaseOrderItem.
+    /// </summary>
     public void AdjustCartQuantity(int quantityChange)
     {
         CartQuantity += quantityChange;

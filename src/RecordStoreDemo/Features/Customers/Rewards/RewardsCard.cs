@@ -16,10 +16,17 @@ public class RewardsCard : BaseEntity
     private readonly List<RewardsTransaction> _transactions = [];
     public virtual ICollection<RewardsTransaction> Transactions => _transactions.AsReadOnly();
 
+    /// <summary>
+    /// Sets the Number of the Rewards Card.
+    /// </summary>
     public void SetCardNumber(string number)
     {
         Number = Guard.Against.InvalidCardNumber(number, nameof(Number));
     }
+
+    /// <summary>
+    /// Records a positive or negative change in Rewards Points.
+    /// </summary>
     public RewardsTransaction AddTransaction(string cardNumber, int pointsChange)
     {
         if (cardNumber != Number)

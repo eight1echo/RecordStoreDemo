@@ -17,6 +17,9 @@ public class Vendor : BaseEntity
     private readonly List<CatalogProduct> _products = [];
     public virtual ICollection<CatalogProduct> Products => _products.AsReadOnly();
 
+    /// <summary>
+    /// Adds new or updates existing CatalogProducts. To be called when importing a Vendor's Catalog.
+    /// </summary>
     public List<CatalogProduct> ImportCatalogProducts(List<CatalogProduct> catalogProducts)
     {
         var newProducts = new List<CatalogProduct>();
@@ -27,7 +30,7 @@ public class Vendor : BaseEntity
 
             if (existing is not null)
             {
-                // Update Existing
+                // TODO: Update Existing Products
             }
             else
             {

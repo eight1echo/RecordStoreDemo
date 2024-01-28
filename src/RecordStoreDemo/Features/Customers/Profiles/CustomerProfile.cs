@@ -17,10 +17,17 @@ public class CustomerProfile : BaseEntity
     public Guid RewardsCardId { get; set; }
     public virtual RewardsCard RewardsCard { get; set; } = null!;
 
+    /// <summary>
+    /// Add a Rewards Card.
+    /// </summary>
     public void AttachRewardsCard(string number)
     {
         RewardsCard.SetCardNumber(number);
     }
+
+    /// <summary>
+    /// Add a SpecialOrder for an InventoryProduct.
+    /// </summary>
     public SpecialOrder AddSpecialOrder(Guid inventoryProductId)
     {
         var order = new SpecialOrder(Id, inventoryProductId);
@@ -28,6 +35,10 @@ public class CustomerProfile : BaseEntity
 
         return order;
     }
+
+    /// <summary>
+    /// Returns the Customer's preferred method of contact: email address or phone number.
+    /// </summary>
     public string GetContact()
     {
         if (EmailAddress is null)
@@ -35,6 +46,10 @@ public class CustomerProfile : BaseEntity
 
         return EmailAddress.Address;
     }
+
+    /// <summary>
+    /// Set the Customer's Name and Contact information.
+    /// </summary>
     public void SetDetails(string name, string contact)
     {
         Name = Guard.Against.NullOrEmpty(name, nameof(Name));

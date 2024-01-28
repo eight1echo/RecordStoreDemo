@@ -17,6 +17,9 @@ public class Receive : BaseEntity
     public ReceiveStatus Status { get; private set; }
     public DateTime DateSubmitted { get; private set; }
 
+    /// <summary>
+    /// Adds a new ReceiveItem to the Receive or increases the quantity of an existing Item.
+    /// </summary>
     public ReceiveItem AddItem(ReceiveItem newItem)
     {
         var existing = GetItem(newItem.InventoryProductId);
@@ -32,6 +35,9 @@ public class Receive : BaseEntity
         }        
     }
 
+    /// <summary>
+    /// Updates a ReceiveItem in the Receive with a new quantity.
+    /// </summary>
     public ReceiveItem UpdateItem(Guid inventoryProductId, int newQuantity)
     {
         var item = GetItem(inventoryProductId)
@@ -43,6 +49,9 @@ public class Receive : BaseEntity
         return item;
     }
 
+    /// <summary>
+    /// Removes a ReceiveItem from the Receive.
+    /// </summary>
     public void RemoveItem(Guid inventoryProductId)
     {
         var item = GetItem(inventoryProductId)
@@ -51,6 +60,10 @@ public class Receive : BaseEntity
         _items.Remove(item);
     }
 
+    /// <summary>
+    /// Submit a Receive. 
+    /// Products included in the order will have their OnHand increased and their OrderedQuantity reduced by the respective quantities.
+    /// </summary>
     public void Submit()
     {
         if (Status != ReceiveStatus.Pending)
@@ -61,9 +74,11 @@ public class Receive : BaseEntity
 
         foreach (var item in _items)
         {
+            // Update quantities.
             item.InventoryProduct.OnHandAdjustment(item.Quantity, $"Received on {DateTime.Now.ToShortDateString()}");
             item.CatalogProduct.AdjustOrderedQuantity(-item.Quantity);
 
+            // Check if any SpecialOrders for the Product.
             var specialOrders = item.InventoryProduct.SpecialOrders.Where(so => so.Status == SpecialOrderStatus.Ordered).ToList();
 
             if (specialOrders.Count > 0)

@@ -16,7 +16,7 @@ public class AddRewardsTransactionEndpoint(ICustomerProfileRepository customerRe
     {
         var customer = await customerRepo.GetCustomer(request.CustomerProfileId);
 
-        var transaction = customer.RewardsCard.AddTransaction(request.CardNumber.FromSpacedRewardsCard(), request.PointsChange);
+        var transaction = customer.RewardsCard.AddTransaction(request.CardNumber.Replace(" ", ""), request.PointsChange);
 
         await customerRepo.Update(customer);
 

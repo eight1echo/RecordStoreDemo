@@ -30,6 +30,9 @@ public class InventoryProduct : BaseEntity
     private readonly List<SpecialOrder> _specialOrders = [];
     public virtual ICollection<SpecialOrder> SpecialOrders => _specialOrders.AsReadOnly();
 
+    /// <summary>
+    /// Sets the Details of a Product: Artist, Department, Format, Genre, StreetDate, Title, and UPC.
+    /// </summary>
     public void SetDetails(string artist, string department, string format, string genre, DateTime streetDate, string title, string upc)
     {
         Artist = Guard.Against.NullOrWhiteSpace(artist, nameof(Artist));
@@ -40,6 +43,9 @@ public class InventoryProduct : BaseEntity
         UPC = new UPC(upc);
     }
 
+    /// <summary>
+    /// Make an adjustment to a Product's OnHand quantity with the reason for the change.
+    /// </summary>
     public OnHandChange OnHandAdjustment(int quantityChange, string reason)
     {
         var inventoryChange = new OnHandChange(Id, OnHand, quantityChange, reason);
@@ -53,6 +59,9 @@ public class InventoryProduct : BaseEntity
         return inventoryChange;
     }
 
+    /// <summary>
+    /// Make an adjustment to a Product's Price with the reason for the change.
+    /// </summary>
     public PriceChange PriceAdjustment(decimal newPrice, string reason)
     {
         var priceChange = new PriceChange(Id, new Price(Price.Value), new Price(newPrice), reason);
