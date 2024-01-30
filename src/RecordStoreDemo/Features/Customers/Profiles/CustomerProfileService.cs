@@ -1,4 +1,5 @@
 ﻿using RecordStoreDemo.Features.Customers.Profiles.Commands.CreateCustomer;
+using RecordStoreDemo.Features.Customers.Profiles.Queries.FindCustomers;
 using RecordStoreDemo.Features.Customers.Profiles.Queries.GetCustomerDetails;
 
 namespace RecordStoreDemo.Features.Customers.Profiles;
@@ -15,58 +16,35 @@ public class CustomerProfileService : ICustomerProfileService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
-    public async Task<CustomerProfileModel> CreateCustomerProfile(CreateCustomerProfileRequest request)
+    public async Task<ServiceResult<CustomerProfileModel>> CreateCustomerProfile(CreateCustomerProfileRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
-        response.EnsureSuccessStatusCode();
+        var result = await ServiceResult<CustomerProfileModel>.GetResultAsync(response);
 
-        var customer = await response.Content.ReadFromJsonAsync<CustomerProfileModel>();
-
-        if (customer is not null)
-        {
-            return customer;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;     
     }
 
-    public async Task<List<CustomerProfileModel>> FindCustomers(string query)
+    public async Task<ServiceResult<List<CustomerProfileModel>>> FindCustomers(FindCustomersRequest request)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<CustomerProfileModel>>($"find/{query}");
+        var response = await _httpClient.GetAsync($"find?Name={request.Name}");
+        var result = await ServiceResult<List<CustomerProfileModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<CustomerDetailsModel> GetCustomerDetails(Guid profileId)
+    public async Task<ServiceResult<CustomerDetailsModel>> GetCustomer(Guid profileId)
     {
-        var response = await _httpClient.GetFromJsonAsync<CustomerDetailsModel>($"{profileId}");
+        var response = await _httpClient.GetAsync($"{profileId}");
+        var result = await ServiceResult<CustomerDetailsModel>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<List<CustomerProfileModel>> ListCustomers()
+    public async Task<ServiceResult<List<CustomerProfileModel>>> ListCustomers()
     {
-        var response = await _httpClient.GetFromJsonAsync<List<CustomerProfileModel>>($"");
+        var response = await _httpClient.GetAsync("");
+        var result = await ServiceResult<List<CustomerProfileModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 }

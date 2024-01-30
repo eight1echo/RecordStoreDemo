@@ -13,45 +13,27 @@ public class SpecialOrderService : ISpecialOrderService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
-    public async Task<SpecialOrderModel> CreateSpecialOrder(CreateSpecialOrderRequest request)
+    public async Task<ServiceResult<SpecialOrderModel>> CreateSpecialOrder(CreateSpecialOrderRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
-        response.EnsureSuccessStatusCode();
+        var result = await ServiceResult<SpecialOrderModel>.GetResultAsync(response);
 
-        var vendor = await response.Content.ReadFromJsonAsync<SpecialOrderModel>();
-
-        if (vendor is not null)
-        {
-            return vendor;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<List<SpecialOrderModel>> GetCustomerSpecialOrders(Guid customerProfileId)
+    public async Task<ServiceResult<List<SpecialOrderModel>>> GetCustomerSpecialOrders(Guid customerProfileId)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<SpecialOrderModel>>($"customer/{customerProfileId}");
+        var response = await _httpClient.GetAsync($"customer/{customerProfileId}");
+        var result = await ServiceResult<List<SpecialOrderModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<List<SpecialOrderModel>> GetProductSpecialOrders(Guid inventoryProductId)
+    public async Task<ServiceResult<List<SpecialOrderModel>>> GetProductSpecialOrders(Guid inventoryProductId)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<SpecialOrderModel>>($"product/{inventoryProductId}");
+        var response = await _httpClient.GetAsync($"product/{inventoryProductId}");
+        var result = await ServiceResult<List<SpecialOrderModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 }

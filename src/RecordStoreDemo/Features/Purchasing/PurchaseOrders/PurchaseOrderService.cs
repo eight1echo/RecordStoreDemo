@@ -15,10 +15,11 @@ public class PurchaseOrderService : IPurchaseOrderService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
+    // TODO: ServiceResult for Tasks when nothing is returned.
     public async Task DeleteItem(Guid catalogProductId)
     {
         var response = await _httpClient.DeleteAsync($"items/{catalogProductId}");
-        response.EnsureSuccessStatusCode();
+        response.EnsureSuccessStatusCode();        
     }
 
     public async Task SubmitOrder(Guid vendorId)

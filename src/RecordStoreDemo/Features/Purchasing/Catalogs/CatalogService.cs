@@ -22,69 +22,42 @@ public class CatalogService : ICatalogService
         _storageService = storageService;
     }
 
-    public async Task<List<CatalogProductModel>> FindCatalogProducts(ProductQueryRequest request)
+    public async Task<ServiceResult<List<CatalogProductModel>>> FindCatalogProducts(ProductQueryRequest request)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<CatalogProductModel>>($"find?Artist={request.Artist}&Title={request.Title}&UPC={request.UPC}");
+        var response = await _httpClient.GetAsync($"find?Artist={request.Artist}&Title={request.Title}&UPC={request.UPC}");
+        var result = await ServiceResult<List<CatalogProductModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
-    public async Task<CatalogProductModel?> FindCatalogProductByUPC(string upc)
+
+    public async Task<ServiceResult<CatalogProductModel>> FindCatalogProductByUPC(string upc)
     {
         var response = await _httpClient.GetAsync($"find/{upc}");
+        var result = await ServiceResult<CatalogProductModel>.GetResultAsync(response);
 
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<CatalogProductModel>();
-
-            return result;
-        }
-
-        return null;
+        return result;
     }
-    public async Task<CatalogProductModel> GetCatalogProduct(Guid id)
+
+    public async Task<ServiceResult<CatalogProductModel>> GetCatalogProduct(Guid id)
     {
         var response = await _httpClient.GetAsync($"{id}");
-        var result = await response.Content.ReadFromJsonAsync<CatalogProductModel>();
+        var result = await ServiceResult<CatalogProductModel>.GetResultAsync(response);
 
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
-    public async Task<List<CatalogProductModel>> ImportCatalogProducts(ImportCatalogProductsRequest request)
+    public async Task<ServiceResult<List<CatalogProductModel>>> ImportCatalogProducts(ImportCatalogProductsRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
-        var result = await response.Content.ReadFromJsonAsync<List<CatalogProductModel>>();
+        var result = await ServiceResult<List<CatalogProductModel>>.GetResultAsync(response);
 
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
-    public async Task<CatalogModel> UpdateCatalogOptions(UpdateCatalogOptionsRequest request)
+    public async Task<ServiceResult<CatalogModel>> UpdateCatalogOptions(UpdateCatalogOptionsRequest request)
     {
         var response = await _httpClient.PutAsJsonAsync("", request);
-        var result = await response.Content.ReadFromJsonAsync<CatalogModel>();
+        var result = await ServiceResult<CatalogModel>.GetResultAsync(response);
 
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
     public async Task UploadCatalog(string vendorName, IBrowserFile file)
     {

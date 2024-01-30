@@ -1,7 +1,7 @@
 ﻿@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.ImportCatalogProducts
 @using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.UpdateCatalogOptions
 @using RecordStoreDemo.Features.Purchasing.Vendors.Queries.GetVendorDetails
-
+@inherits BaseComponent
 @inject ICatalogService _catalogs
 @inject IVendorService _vendors
 
@@ -98,7 +98,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Vendor = await _vendors.GetVendor(SelectedVendor.Id);
+        var result = await _vendors.GetVendor(SelectedVendor.Id);
+        if (result.Successful)
+        {
+            Vendor = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);
     }
 
     private bool editing;

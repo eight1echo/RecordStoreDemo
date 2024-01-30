@@ -1,6 +1,7 @@
 ﻿@using RecordStoreDemo.Features.Customers.Profiles.Queries.GetCustomerDetails
 @using RecordStoreDemo.Features.Customers.Rewards.Commands.AddRewardsTransaction
 @using RecordStoreDemo.Features.Customers.Rewards.Commands.AttachRewardsCard
+@inherits BaseComponent
 @inject ICustomerProfileService _customers
 @inject IRewardsCardService _rewards
 
@@ -109,7 +110,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Customer = await _customers.GetCustomerDetails(SelectedCustomer.Id);
+        var result = await _customers.GetCustomer(SelectedCustomer.Id);
+
+        if (result.Successful)
+        {
+            Customer = result.Value!;
+        }
+        else
+            await OpenErrorDialog(result.Message);
     }
 
     private bool attachingCard;
@@ -121,9 +129,16 @@
     }
     private async Task ConfirmAttachment()
     {
-        Customer.RewardsCard = await _rewards.AttachRewardsCard(AttachRequest);
-        ToggleAttaching();
-        AttachRequest = new();
+        var result = await _rewards.AttachRewardsCard(AttachRequest);
+
+        if (result.Successful)
+        {
+            Customer.RewardsCard = result.Value!;
+            ToggleAttaching();
+            AttachRequest = new();
+        }
+        else
+            await OpenErrorDialog(result.Message);                
     }
 
     private bool addingRewards;
@@ -136,11 +151,18 @@
     }
     private async Task ConfirmRewardsTransaction()
     {
-        var transaction = await _rewards.AddTransaction(AddTransactionRequest);
-        Customer.RewardsCard.Transactions.Add(transaction);
-        Customer.RewardsCard.Points += transaction.PointsChange;
-        ToggleAdding();
-        AddTransactionRequest = new();
+        var result = await _rewards.AddTransaction(AddTransactionRequest);
+
+        if (result.Successful)
+        {
+            var transaction = result.Value!;
+            Customer.RewardsCard.Transactions.Add(transaction);
+            Customer.RewardsCard.Points += transaction.PointsChange;
+            ToggleAdding();
+            AddTransactionRequest = new();
+        }
+        else
+            await OpenErrorDialog(result.Message);        
     }
 
     private void Cancel()

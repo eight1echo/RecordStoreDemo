@@ -1,4 +1,5 @@
 ﻿@using RecordStoreDemo.Features.Purchasing.Vendors.Commands.CreateVendor
+@inherits BaseComponent
 @inject IVendorService _vendors
 
 <EditForm Model="@CreateRequest" OnValidSubmit="@CreateVendor">
@@ -40,6 +41,10 @@
     private async Task CreateVendor()
     {
         var result = await _vendors.CreateVendor(CreateRequest);
-        await OnSuccess.InvokeAsync(result);
+        if (result.Successful)
+        {
+            await OnSuccess.InvokeAsync(result.Value!);
+        }
+        else await OpenErrorDialog(result.Message);       
     }
 }

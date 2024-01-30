@@ -5,7 +5,7 @@ namespace RecordStoreDemo.Features.Purchasing.Vendors;
 
 public interface IVendorService
 {
-    Task<VendorModel> CreateVendor(CreateVendorRequest request);
-    Task<VendorDetailsModel> GetVendor(Guid vendorId);
-    Task<List<VendorModel>> ListVendors();
+    Task<ServiceResult<VendorModel>> CreateVendor(CreateVendorRequest request);
+    Task<ServiceResult<VendorDetailsModel>> GetVendor(Guid vendorId);
+    Task<ServiceResult<List<VendorModel>>> ListVendors();
 }

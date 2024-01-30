@@ -1,5 +1,5 @@
 ﻿@page "/query"
-@inherits LoadingComponent
+@inherits BaseComponent
 @inject ICatalogService _catalogs
 @inject IInventoryProductService _inventory
 
@@ -87,13 +87,23 @@ else
     private async Task FindProducts()
     {
         BeginLoading();
-        InventoryProducts = await _inventory.FindInventoryProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        var result = await _inventory.FindInventoryProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        if (result.Successful)
+        {
+            InventoryProducts = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);
         FinishLoading();
     }
     private async Task FindCatalogProducts()
     {
         BeginLoading();
-        CatalogProducts = await _catalogs.FindCatalogProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        var result = await _catalogs.FindCatalogProducts(new ProductQueryRequest { Artist = Artist, Title = Title, UPC = UPC });
+        if (result.Successful)
+        {
+            CatalogProducts = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);        
         FinishLoading();
     }
 }

@@ -1,7 +1,7 @@
 ﻿@using RecordStoreDemo.Features.Customers.SpecialOrders.Commands.CreateSpecialOrder
 @using RecordStoreDemo.Features.Inventory.Products.Commands.CreateInventoryProduct
 
-@inherits LoadingComponent
+@inherits BaseComponent
 @inject ICatalogService _catalogs
 @inject ICustomerProfileService _customers
 @inject IInventoryProductService _inventory
@@ -168,12 +168,26 @@
     {
         if (ProductDetails.CatalogProduct is null)
         {
-            ProductDetails.CatalogProduct = await _catalogs.FindCatalogProductByUPC(ProductDetails.UPC);
+            var result = await _catalogs.FindCatalogProductByUPC(ProductDetails.UPC);
+            if (result.Successful)
+            {
+                ProductDetails.CatalogProduct = result.Value;
+            }
+            else await OpenErrorDialog(result.Message);            
         }
 
         if (ProductDetails.InventoryProduct is null)
         {
-            ProductDetails.InventoryProduct = await _inventory.FindInventoryProductByUPC(ProductDetails.UPC);
+            var result = await _inventory.FindInventoryProductByUPC(ProductDetails.UPC);
+            if (result.Successful)
+            {
+                ProductDetails.InventoryProduct = result.Value;
+            }
+            if (result.Message == "Not Found")
+            {
+                ProductDetails.InventoryProduct = null;
+            }
+            else await OpenErrorDialog(result.Message);        
         }        
     }
 
@@ -202,7 +216,12 @@
             await GetInventoryProduct();
         }
 
-        ProductDetails.SpecialOrders = await _specialOrders.GetProductSpecialOrders(ProductDetails.InventoryProduct!.Id);
+        var result = await _specialOrders.GetProductSpecialOrders(ProductDetails.InventoryProduct!.Id);
+        if (result.Successful)
+        {
+            ProductDetails.SpecialOrders = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);      
     }
 
     private async Task AddToInventory()
@@ -219,13 +238,13 @@
                 UPC = ProductDetails.CatalogProduct.UPC
             };
 
-            ProductDetails.InventoryProduct = await _inventory.CreateInventoryProduct(request);
+            var result = await _inventory.CreateInventoryProduct(request);
+            if (result.Successful)
+            {
+                ProductDetails.InventoryProduct = result.Value!;
+            }
+            else await OpenErrorDialog(result.Message);          
         }
-        else
-        {
-            throw new Exception();
-        }
-
     }
     private async Task AddToWebstore()
     {
@@ -257,15 +276,26 @@
     private async Task AddSpecialOrder()
     {
         ToggleAddingOrder();
-        Customers = await _customers.ListCustomers();
-        CreateOrderRequest.InventoryProductId = ProductDetails.InventoryProduct!.Id;
+
+        var result = await _customers.ListCustomers();
+        if (result.Successful)
+        {
+            Customers = result.Value!;
+            CreateOrderRequest.InventoryProductId = ProductDetails.InventoryProduct!.Id;
+        }
+        else await OpenErrorDialog(result.Message);            
     }
     private async Task CreateSpecialOrder()
     {
-        var order = await _specialOrders.CreateSpecialOrder(CreateOrderRequest);
-        ProductDetails.CatalogProduct!.CartQuantity += CreateOrderRequest.Quantity;
-        ProductDetails.SpecialOrders.Add(order);
-        Cancel();
+        var result = await _specialOrders.CreateSpecialOrder(CreateOrderRequest);
+        if (result.Successful)
+        {
+            var order = result.Value!;
+            ProductDetails.CatalogProduct!.CartQuantity += CreateOrderRequest.Quantity;
+            ProductDetails.SpecialOrders.Add(order);
+            Cancel();
+        }
+        else await OpenErrorDialog(result.Message); 
     }
     private void Cancel()
     {

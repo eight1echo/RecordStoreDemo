@@ -15,45 +15,27 @@ public class VendorService : IVendorService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
-    public async Task<VendorModel> CreateVendor(CreateVendorRequest request)
+    public async Task<ServiceResult<VendorModel>> CreateVendor(CreateVendorRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
-        response.EnsureSuccessStatusCode();
+        var result = await ServiceResult<VendorModel>.GetResultAsync(response);
 
-        var vendor = await response.Content.ReadFromJsonAsync<VendorModel>();
-
-        if (vendor is not null)
-        {
-            return vendor;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<VendorDetailsModel> GetVendor(Guid vendorId)
+    public async Task<ServiceResult<VendorDetailsModel>> GetVendor(Guid vendorId)
     {
-        var response = await _httpClient.GetFromJsonAsync<VendorDetailsModel>($"{vendorId}");
+        var response = await _httpClient.GetAsync($"{vendorId}");
+        var result = await ServiceResult<VendorDetailsModel>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<List<VendorModel>> ListVendors()
+    public async Task<ServiceResult<List<VendorModel>>> ListVendors()
     {
-        var response = await _httpClient.GetFromJsonAsync<List<VendorModel>>($"");
+        var response = await _httpClient.GetAsync($"");
+        var result = await ServiceResult<List<VendorModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 }

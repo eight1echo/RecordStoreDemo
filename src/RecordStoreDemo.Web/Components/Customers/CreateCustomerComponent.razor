@@ -1,4 +1,5 @@
 ﻿@using RecordStoreDemo.Features.Customers.Profiles.Commands.CreateCustomer
+@inherits BaseComponent
 @inject ICustomerProfileService _customers
 
 <EditForm Model="@CreateRequest" OnValidSubmit="@CreateCustomer">
@@ -43,6 +44,11 @@
     private async Task CreateCustomer()
     {
         var result = await _customers.CreateCustomerProfile(CreateRequest);
-        await OnSuccess.InvokeAsync(result);
+
+        if (result.Successful)
+        {
+            await OnSuccess.InvokeAsync(result.Value);
+        }
+        else await OpenErrorDialog(result.Message);     
     }
 }

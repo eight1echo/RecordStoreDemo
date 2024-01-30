@@ -13,32 +13,18 @@ public class RewardsCardService : IRewardsCardService
         _httpClient.BaseAddress = new Uri("https://localhost:7067/api/customers/rewards/");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
-    public async Task<RewardsTransactionModel> AddTransaction(AddRewardsTransactionRequest request)
+    public async Task<ServiceResult<RewardsTransactionModel>> AddTransaction(AddRewardsTransactionRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync($"", request);
+        var result = await ServiceResult<RewardsTransactionModel>.GetResultAsync(response);
 
-        var result = await response.Content.ReadFromJsonAsync<RewardsTransactionModel>();
-
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
-    public async Task<RewardsCardModel> AttachRewardsCard(AttachRewardsCardRequest request)
+    public async Task<ServiceResult<RewardsCardModel>> AttachRewardsCard(AttachRewardsCardRequest request)
     {
         var response = await _httpClient.PutAsJsonAsync($"", request);
+        var result = await ServiceResult<RewardsCardModel>.GetResultAsync(response);
 
-        var result = await response.Content.ReadFromJsonAsync<RewardsCardModel>();
-
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 }

@@ -17,71 +17,41 @@ public class ReceiveService : IReceiveService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
-    public async Task<ReceiveItemModel> AddItemToReceive(AddItemToReceiveRequest request)
+    public async Task<ServiceResult<ReceiveItemModel>> AddItemToReceive(AddItemToReceiveRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("items", request);
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<ReceiveItemModel>()
-                ?? throw new Exception();
+        var result = await ServiceResult<ReceiveItemModel>.GetResultAsync(response);
 
-            return result;
-        }
-        else
-            // TODO: Error Handling
-            throw new Exception();
+        return result;
     }
 
-    public async Task<ReceiveModel> CreateReceive(CreateReceiveRequest request)
+    public async Task<ServiceResult<ReceiveModel>> CreateReceive(CreateReceiveRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<ReceiveModel>()
-                ?? throw new Exception();
+        var result = await ServiceResult<ReceiveModel>.GetResultAsync(response);
 
-            return result;
-        }
-        else
-            // TODO: Error Handling
-            throw new Exception();
+        return result;
     }
 
-    public async Task<AddItemToReceiveRequest> GetItemToReceive(GetItemToReceiveRequest request)
+    public async Task<ServiceResult<AddItemToReceiveRequest>> GetItemToReceive(GetItemToReceiveRequest request)
     {
         var response = await _httpClient.GetAsync($"items/{request.UPC}");
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<AddItemToReceiveRequest>()
-                ?? throw new Exception();
+        var result = await ServiceResult<AddItemToReceiveRequest>.GetResultAsync(response);
 
-            return result;
-        }
-        else
-            // TODO: Error Handling
-            throw new Exception();
+        return result;
     }
 
-    public async Task<ReceiveModel> GetPendingReceive(Guid vendorId)
+    public async Task<ServiceResult<ReceiveModel>> GetPendingReceive(Guid vendorId)
     {
         var response = await _httpClient.GetAsync($"{vendorId}");
-        if (response.IsSuccessStatusCode)
+        if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            var result = await response.Content.ReadFromJsonAsync<ReceiveModel>()
-                ?? throw new Exception();
-
-            return result;
+            return await CreateReceive(new CreateReceiveRequest { VendorId = vendorId });
         }
-        else if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            var result = await CreateReceive(new CreateReceiveRequest { VendorId = vendorId });
-            return result;
-        }
-        else
-            // TODO: Error Handling
-            throw new Exception();
+        else return await ServiceResult<ReceiveModel>.GetResultAsync(response);
     }
 
+    // TODO: ServiceResult for Tasks when nothing is returned.
     public async Task SubmitReceive(Guid vendorId)
     {
         var response = await _httpClient.PostAsync($"submit/{vendorId}", null);

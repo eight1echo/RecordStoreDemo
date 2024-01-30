@@ -1,4 +1,5 @@
 ﻿@using RecordStoreDemo.Features.Purchasing.Catalogs.Commands.UpdateCatalogOptions
+@inherits BaseComponent
 @inject ICatalogService _catalogs
 
 <EditForm Model="UpdateRequest" OnValidSubmit="@SaveOptions">
@@ -43,6 +44,10 @@
     private async Task SaveOptions()
     {
         var result = await _catalogs.UpdateCatalogOptions(UpdateRequest);
-        await OnSuccess.InvokeAsync(result);
+        if (result.Successful)
+        {
+            await OnSuccess.InvokeAsync(result.Value!);
+        }
+        else await OpenErrorDialog(result.Message);
     }
 }

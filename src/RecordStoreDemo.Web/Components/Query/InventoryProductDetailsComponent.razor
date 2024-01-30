@@ -1,7 +1,7 @@
 ﻿@using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductDetails
 @using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductOnHand
 @using RecordStoreDemo.Features.Inventory.Products.Commands.UpdateProductPrice
-
+@inherits BaseComponent
 @inject IInventoryProductService _inventoryService
 @inject IJSRuntime JSInterop
 
@@ -237,36 +237,58 @@
     private void ToggleOnHandChange() => onHandChanging = !onHandChanging;
     private async Task OnHandChange()
     {
-        Product.OnHandHistory = await _inventoryService.GetProductOnHandHistory(Product.Id);
-        OnHandChangeRequest.ProductId = Product.Id;
-        ToggleOnHandChange();
+        var result = await _inventoryService.GetProductOnHandHistory(Product.Id);
+        if (result.Successful)
+        {
+            Product.OnHandHistory = result.Value!;
+            OnHandChangeRequest.ProductId = Product.Id;
+            ToggleOnHandChange();
+        }
+        else await OpenErrorDialog(result.Message);
+
     }
     private async Task SaveOnHand()
     {
-        var onHandChange = await _inventoryService.UpdateProductOnHand(OnHandChangeRequest);
-        Product.OnHand = onHandChange.NewOnHand;
-        Product.OnHandHistory.Add(onHandChange);
-        ToggleOnHandChange();
-        OnHandChangeRequest = new();
+        var result = await _inventoryService.UpdateProductOnHand(OnHandChangeRequest);
+        if (result.Successful)
+        {
+            var onHandChange = result.Value!;
+            Product.OnHand = onHandChange.NewOnHand;
+            Product.OnHandHistory.Add(onHandChange);
+            ToggleOnHandChange();
+            OnHandChangeRequest = new();
+        }
+        else await OpenErrorDialog(result.Message);        
     }
 
     private bool priceChanging;
     private void TogglePriceChange() => priceChanging = !priceChanging;
     private async Task PriceChange()
     {
-        Product.PriceHistory = await _inventoryService.GetProductPriceHistory(Product.Id);
-        PriceChangeRequest.ProductId = Product.Id;
-        PriceChangeRequest.NewPrice = Product.Price;
-        TogglePriceChange();
+        var result = await _inventoryService.GetProductPriceHistory(Product.Id);
+        if (result.Successful)
+        {
+            Product.PriceHistory = result.Value!;
+            PriceChangeRequest.ProductId = Product.Id;
+            PriceChangeRequest.NewPrice = Product.Price;
+            TogglePriceChange();
+        }
+        else await OpenErrorDialog(result.Message);        
     }
     private async Task SavePriceChange()
     {
-        var priceChange = await _inventoryService.UpdateProductPrice(PriceChangeRequest);
-        Product.Price = priceChange.NewPrice;
-        Product.PriceHistory.Add(priceChange);
-        TogglePriceChange();
-        PriceChangeRequest = new();
+        var result = await _inventoryService.UpdateProductPrice(PriceChangeRequest);
+        if (result.Successful)
+        {
+            var priceChange = result.Value!;
+            Product.Price = priceChange.NewPrice;
+            Product.PriceHistory.Add(priceChange);
+            TogglePriceChange();
+            PriceChangeRequest = new();
+        }
+        else await OpenErrorDialog(result.Message);        
     }
+
     private async Task CopyToClipboard(string? text)
     {
         if (text is not null)

@@ -1,6 +1,6 @@
 ﻿@page "/customers"
 
-@inherits LoadingComponent
+@inherits BaseComponent
 @inject ICustomerProfileService _customers
 
 @if (creating)
@@ -51,7 +51,15 @@ else
     protected override async Task OnInitializedAsync()
     {
         BeginLoading();
-        Customers = await _customers.ListCustomers();
+        var result = await _customers.ListCustomers();
+        if (result.Successful)
+        {
+            Customers = result.Value!;
+        }
+        else
+        {
+            await OpenErrorDialog(result.Message);
+        }       
         FinishLoading();
     }
 

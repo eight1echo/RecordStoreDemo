@@ -26,6 +26,7 @@ global using RecordStoreDemo.Features.Purchasing.Catalogs;
 global using RecordStoreDemo.Features.Purchasing.PurchaseOrders;
 global using RecordStoreDemo.Features.Purchasing.Vendors;
 global using RecordStoreDemo.Features.Receiving;
+global using RecordStoreDemo.Features.Webstore;
 global using RecordStoreDemo.Features.Webstore.Collections;
 global using RecordStoreDemo.Features.Webstore.MetaFields;
 global using RecordStoreDemo.Features.Webstore.Products;

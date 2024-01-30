@@ -1,0 +1,26 @@
+﻿@inject IDialogService _dialogService
+
+@code {
+    public bool Loading { get; private set; }
+    public bool BeginLoading() => Loading = true;
+    public bool FinishLoading() => Loading = false;
+
+    public async Task OpenErrorDialog(string errorMessage)
+    {
+        var options = new DialogOptions()
+        {
+            CloseButton = true,
+            NoHeader = false,
+            MaxWidth = MaxWidth.Medium,
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["ErrorMessage"] = errorMessage,
+        };
+
+        var dialog = await _dialogService.ShowAsync<ErrorDialog>("Error Occurred", parameters, options);
+
+        var result = await dialog.Result;
+    }
+}

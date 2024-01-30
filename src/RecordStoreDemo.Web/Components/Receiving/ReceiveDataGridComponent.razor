@@ -47,7 +47,7 @@
         </PropertyColumn>
         <PropertyColumn Property="x => x.Product.Department">
             <EditTemplate>
-                <MudSelect @bind-Value="context.Item.Product.Department" Required RequiredError="You must select a Department" Margin="@Margin.Dense">
+                <MudSelect @bind-Value="context.Item.Product.Department" Required RequiredError="You must select a Department" Margin="@Margin.Dense" Label="Department" Variant="Variant.Filled">
                      @foreach (var department in ProductCategories.Departments)
                     {
                         <MudSelectItem Value="@department" />
@@ -57,7 +57,7 @@
         </PropertyColumn>
         <PropertyColumn Property="x => x.Product.Format">
             <EditTemplate>
-                <MudSelect @bind-Value="context.Item.Product.Format" Required RequiredError="You must select a Department" Margin="@Margin.Dense">
+                <MudSelect @bind-Value="context.Item.Product.Format" Required RequiredError="You must select a Department" Margin="@Margin.Dense" Label="Format" Variant="Variant.Filled">
                      @switch (context.Item.Product.Department)
                     {
                         case "Apparel":
@@ -90,7 +90,7 @@
         </PropertyColumn>
         <PropertyColumn Property="x => x.Product.Genre">
             <EditTemplate>
-                <MudSelect @bind-Value="context.Item.Product.Genre" Margin="@Margin.Dense">
+                <MudSelect @bind-Value="context.Item.Product.Genre" Margin="@Margin.Dense" Label="Genre" Variant="Variant.Filled">
                      @foreach (var genre in ProductMetaFields.MusicGenres)
                     {
                         <MudSelectItem Value="@genre" />

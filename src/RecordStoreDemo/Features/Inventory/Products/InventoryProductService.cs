@@ -17,102 +17,67 @@ public class InventoryProductService : IInventoryProductService
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     }
 
-    public async Task<InventoryProductModel?> FindInventoryProductByUPC(string upc)
+    public async Task<ServiceResult<InventoryProductModel>> FindInventoryProductByUPC(string upc)
     {
         var response = await _httpClient.GetAsync($"find/{upc}");
+        var result = await ServiceResult<InventoryProductModel>.GetResultAsync(response);
 
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<InventoryProductModel>();
-
-            return result;
-        }
-
-        return null;
+        return result;
     }
 
-    public async Task<List<InventoryProductModel>> FindInventoryProducts(ProductQueryRequest request)
+    public async Task<ServiceResult<List<InventoryProductModel>>> FindInventoryProducts(ProductQueryRequest request)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<InventoryProductModel>>($"find?Artist={request.Artist}&Title={request.Title}&UPC={request.UPC}");
+        var response = await _httpClient.GetAsync($"find?Artist={request.Artist}&Title={request.Title}&UPC={request.UPC}");
+        var result = await ServiceResult<List<InventoryProductModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<InventoryProductModel> CreateInventoryProduct(CreateInventoryProductRequest request)
+    public async Task<ServiceResult<InventoryProductModel>> CreateInventoryProduct(CreateInventoryProductRequest request)
     {
         var response = await _httpClient.PostAsJsonAsync("", request);
+        var result = await ServiceResult<InventoryProductModel>.GetResultAsync(response);
 
-        var product = await response.Content.ReadFromJsonAsync<InventoryProductModel>();
-
-        // TODO: Handle possible HttpClient errors.
-        return product ?? throw new Exception();
+        return result;
     }
 
-    public async Task<List<PriceHistoryModel>> GetProductPriceHistory(Guid id)
+    public async Task<ServiceResult<List<PriceHistoryModel>>> GetProductPriceHistory(Guid id)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<PriceHistoryModel>>($"price/{id}");
+        var response = await _httpClient.GetAsync($"price/{id}");
+        var result = await ServiceResult<List<PriceHistoryModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<List<OnHandHistoryModel>> GetProductOnHandHistory(Guid id)
+    public async Task<ServiceResult<List<OnHandHistoryModel>>> GetProductOnHandHistory(Guid id)
     {
-        var response = await _httpClient.GetFromJsonAsync<List<OnHandHistoryModel>>($"onhand/{id}");
+        var response = await _httpClient.GetAsync($"onhand/{id}");
+        var result = await ServiceResult<List<OnHandHistoryModel>>.GetResultAsync(response);
 
-        if (response is not null)
-        {
-            return response;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<OnHandHistoryModel> UpdateProductOnHand(UpdateProductOnHandRequest request)
+    public async Task<ServiceResult<OnHandHistoryModel>> UpdateProductOnHand(UpdateProductOnHandRequest request)
     {
         var response = await _httpClient.PutAsJsonAsync($"onhand", request);
+        var result = await ServiceResult<OnHandHistoryModel>.GetResultAsync(response);
 
-        var result = await response.Content.ReadFromJsonAsync<OnHandHistoryModel>();
-
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task<PriceHistoryModel> UpdateProductPrice(UpdateProductPriceRequest request)
+    public async Task<ServiceResult<PriceHistoryModel>> UpdateProductPrice(UpdateProductPriceRequest request)
     {
         var response = await _httpClient.PutAsJsonAsync($"price", request);
+        var result = await ServiceResult<PriceHistoryModel>.GetResultAsync(response);
 
-        var result = await response.Content.ReadFromJsonAsync<PriceHistoryModel>();
-
-        if (result is not null)
-        {
-            return result;
-        }
-        else
-            // TODO: Handle possible HttpClient errors.
-            throw new Exception();
+        return result;
     }
 
-    public async Task UpdateProductDetails(UpdateProductDetailsRequest request)
+    public async Task<ServiceResult<InventoryProductModel>> UpdateProductDetails(UpdateProductDetailsRequest request)
     {
         var response = await _httpClient.PutAsJsonAsync($"details", request);
-        response.EnsureSuccessStatusCode();
+        var result = await ServiceResult<InventoryProductModel>.GetResultAsync(response);
+
+        return result;
     }
 }

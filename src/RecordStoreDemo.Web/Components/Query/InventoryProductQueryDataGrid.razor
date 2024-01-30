@@ -1,4 +1,5 @@
-﻿@inject ICatalogService _catalogs
+﻿@inherits BaseComponent
+@inject ICatalogService _catalogs
 
 @if (selected)
 {
@@ -39,13 +40,18 @@ else
     private async Task SelectProduct(DataGridRowClickEventArgs<InventoryProductModel> clickArgs)
     {
         SelectedProduct = Products.Where(cp => cp.Id == clickArgs.Item.Id).First();
-
         ProductDetails.UPC = SelectedProduct.UPC;
-        ProductDetails.CatalogProduct = await _catalogs.FindCatalogProductByUPC(SelectedProduct.UPC);
-        ProductDetails.InventoryProduct = SelectedProduct;
 
-        ToggleSelected();
-        await OnProductSelected.InvokeAsync(true);
+        var result = await _catalogs.FindCatalogProductByUPC(SelectedProduct.UPC);
+        if (result.Successful)
+        {
+            ProductDetails.CatalogProduct = result.Value;
+            ProductDetails.InventoryProduct = SelectedProduct;
+
+            ToggleSelected();
+            await OnProductSelected.InvokeAsync(true);
+        }
+        else await OpenErrorDialog(result.Message);        
     }
 
     private async Task Close()

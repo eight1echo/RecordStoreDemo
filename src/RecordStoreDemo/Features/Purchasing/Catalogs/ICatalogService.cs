@@ -7,10 +7,10 @@ namespace RecordStoreDemo.Features.Purchasing.Catalogs;
 public interface ICatalogService
 {
     Task<List<CatalogProductModel>> CatalogProductsFromCSV(Guid vendorId, string vendorName, CatalogModel catalogOptions);
-    Task<List<CatalogProductModel>> FindCatalogProducts(ProductQueryRequest request);
-    Task<CatalogProductModel?> FindCatalogProductByUPC(string upc);
-    Task<CatalogProductModel> GetCatalogProduct(Guid Id);
-    Task<List<CatalogProductModel>> ImportCatalogProducts(ImportCatalogProductsRequest request);
-    Task<CatalogModel> UpdateCatalogOptions(UpdateCatalogOptionsRequest request);
+    Task<ServiceResult<CatalogProductModel>> FindCatalogProductByUPC(string upc);
+    Task<ServiceResult<List<CatalogProductModel>>> FindCatalogProducts(ProductQueryRequest request);
+    Task<ServiceResult<CatalogProductModel>> GetCatalogProduct(Guid id);
+    Task<ServiceResult<List<CatalogProductModel>>> ImportCatalogProducts(ImportCatalogProductsRequest request);
+    Task<ServiceResult<CatalogModel>> UpdateCatalogOptions(UpdateCatalogOptionsRequest request);
     Task UploadCatalog(string vendorName, IBrowserFile file);
 }

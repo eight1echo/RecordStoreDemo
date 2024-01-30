@@ -1,5 +1,6 @@
 ﻿@using RecordStoreDemo.Features.Receiving.Commands.AddItemToReceive
 @using RecordStoreDemo.Features.Receiving.Queries.GetItemToReceive
+@inherits BaseComponent
 @inject IReceiveService _receiving
 
 <MudPaper Class="mud-theme-dark pa-5">
@@ -80,7 +81,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Receive = await _receiving.GetPendingReceive(SelectedVendor.Id);
+        var result = await _receiving.GetPendingReceive(SelectedVendor.Id);
+        if (result.Successful)
+        {
+            Receive = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);        
     }
 
     private bool itemStaged;
@@ -100,29 +106,39 @@
             }                        
         }
 
-        AddItemRequest = await _receiving.GetItemToReceive(GetItemRequest);
+        var result = await _receiving.GetItemToReceive(GetItemRequest);
+        if (result.Successful)
+        {
+            AddItemRequest = result.Value!;
+            AddItemRequest.ReceiveId = Receive.Id;
+            AddItemRequest.Quantity = 1;
+            ToggleItemStaged();
+        }
+        else await OpenErrorDialog(result.Message);
 
-        AddItemRequest.ReceiveId = Receive.Id;
-        AddItemRequest.Quantity = 1;
-        ToggleItemStaged();     
     }
     private async Task AddItemToReceive()
     {        
-        var item = await _receiving.AddItemToReceive(AddItemRequest);
-
-        var existing = Receive.Items.Where(i => i.Product.UPC == item.Product.UPC).FirstOrDefault();
-        if (existing is not null)
+        var result = await _receiving.AddItemToReceive(AddItemRequest);
+        if (result.Successful)
         {
-            existing.Quantity = item.Quantity;
-        }
-        else
-        {
-            Receive.Items.Add(item);
-        }
+            var item = result.Value!;
 
-        AddItemRequest = new();
-        GetItemRequest = new();
-        ToggleItemStaged();
+            var existing = Receive.Items.Where(i => i.Product.UPC == item.Product.UPC).FirstOrDefault();
+            if (existing is not null)
+            {
+                existing.Quantity = item.Quantity;
+            }
+            else
+            {
+                Receive.Items.Add(item);
+            }
+
+            AddItemRequest = new();
+            GetItemRequest = new();
+            ToggleItemStaged();
+        }
+        else await OpenErrorDialog(result.Message);        
     }
     private void Cancel()
     {

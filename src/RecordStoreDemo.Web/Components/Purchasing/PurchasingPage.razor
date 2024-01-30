@@ -1,5 +1,5 @@
 ﻿@page "/purchasing"
-@inherits LoadingComponent
+@inherits BaseComponent
 @inject IVendorService _vendors
 
 @if (creating)
@@ -50,7 +50,12 @@ else
     protected override async Task OnInitializedAsync()
     {
         BeginLoading();
-        Vendors = await _vendors.ListVendors();
+        var result = await _vendors.ListVendors();
+        if (result.Successful)
+        {
+            Vendors = result.Value!;
+        }
+        else await OpenErrorDialog(result.Message);        
         FinishLoading();
     }
 

@@ -5,6 +5,6 @@ namespace RecordStoreDemo.Features.Customers.Rewards;
 
 public interface IRewardsCardService
 {
-    Task<RewardsTransactionModel> AddTransaction(AddRewardsTransactionRequest request);
-    Task<RewardsCardModel> AttachRewardsCard(AttachRewardsCardRequest request);
+    Task<ServiceResult<RewardsTransactionModel>> AddTransaction(AddRewardsTransactionRequest request);
+    Task<ServiceResult<RewardsCardModel>> AttachRewardsCard(AttachRewardsCardRequest request);
 }
